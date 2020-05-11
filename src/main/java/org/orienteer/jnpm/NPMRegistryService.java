@@ -2,11 +2,11 @@ package org.orienteer.jnpm;
 
 import org.orienteer.jnpm.dm.RegistryInfo;
 
-import retrofit2.Call;
+import io.reactivex.Single;
 import retrofit2.http.GET;
 
 public interface NPMRegistryService {
 
 	@GET("/")
-	public Call<RegistryInfo> getRegistryInfo();
+	public Single<RegistryInfo> getRegistryInfo();
 }
