@@ -4,7 +4,7 @@ package org.orienteer.jnpm;
  * Hello world!
  *
  */
-public class App 
+public class JNPM 
 {
     public static void main( String[] args )
     {
