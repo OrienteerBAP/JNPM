@@ -9,9 +9,11 @@ import javax.imageio.spi.RegisterableService;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
 
 import io.reactivex.Single;
+import lombok.extern.slf4j.Slf4j;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -20,6 +22,7 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 /**
  * Unit test for simple App.
  */
+@Slf4j
 public class JNPMTest 
 {
 	private static NPMRegistryService registerableService;
@@ -39,5 +42,12 @@ public class JNPMTest
     	Single<RegistryInfo> info = registerableService.getRegistryInfo();
     	assertNotNull(info);
     	System.out.println(info.blockingGet());
+    }
+    
+    @Test
+    public void packageInforetrival() throws IOException {
+    	Single<PackageInfo> packageInfo = registerableService.getPackageInfo("vue");
+    	assertNotNull(packageInfo);
+    	log.info(packageInfo.blockingGet().toString());
     }
 }

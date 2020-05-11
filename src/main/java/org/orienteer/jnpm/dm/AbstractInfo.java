@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
-public class AbstractInfo {
+public abstract class AbstractInfo {
 	
 	private Map<String, Object> details = new LinkedHashMap<>();
 	 
