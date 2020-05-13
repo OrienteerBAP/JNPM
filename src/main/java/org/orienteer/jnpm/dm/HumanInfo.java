@@ -16,4 +16,12 @@ public class HumanInfo extends AbstractInfo {
 	private String name;
 	private String email;
 	private String url;
+	
+	public String getUsername() {
+		return getName();
+	}
+	
+	public void setUsername(String username) {
+		setName(username);
+	}
 }

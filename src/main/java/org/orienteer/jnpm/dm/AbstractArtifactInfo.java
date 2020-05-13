@@ -2,7 +2,7 @@ package org.orienteer.jnpm.dm;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.Map;import org.apache.log4j.rewrite.MapRewritePolicy;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
@@ -19,9 +19,6 @@ public abstract class AbstractArtifactInfo extends AbstractInfo{
 		private String name;
 		private String description;
 		private String homepage;
-		private Map<String, String> distTags;
-		//versions
-		private Map<String, Date> time;
 		private String readme;
 		private String readmeFilename;
 		private HumanInfo author;
@@ -38,15 +35,4 @@ public abstract class AbstractArtifactInfo extends AbstractInfo{
 			setBugsUrl(map.get("url"));
 		}
 		
-		public Date getCreated() {
-			return getTime().get("created");
-		}
-		
-		public Date getModified() {
-			return getTime().get("modified");
-		}
-		
-		public String getLatest() {
-			return getDistTags().get("latest");
-		}
 }
