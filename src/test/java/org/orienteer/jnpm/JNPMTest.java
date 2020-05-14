@@ -1,10 +1,13 @@
 package org.orienteer.jnpm;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import javax.imageio.spi.RegisterableService;
 
@@ -51,6 +54,19 @@ public class JNPMTest
     	VersionInfo versionInfo = JNPM.instance().retrieveVersion("vue", "2.6.11");
     	assertNotNull(versionInfo);
     	assertNotNull(versionInfo.getVersion());
+    	assertNotNull(versionInfo.getDist());
+    	assertNotNull(versionInfo.getDist().getTarballName());
+    	assertEquals("vue-2.6.11.tgz", versionInfo.getDist().getTarballName());
+    }
+    
+    @Test
+    public void downloadTarball() throws IOException {
+    	VersionInfo versionInfo = JNPM.instance().retrieveVersion("vue", "2.6.11");
+    	assertNotNull(versionInfo);
+    	File localFile = versionInfo.getLocalTarball();
+    	if(localFile.exists()) localFile.delete();
+    	versionInfo.downloadTarball().blockingAwait(20, TimeUnit.SECONDS);
+    	assertTrue(localFile.exists());
     }
     
     @Test

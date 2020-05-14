@@ -1,9 +1,16 @@
 package org.orienteer.jnpm.dm;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+
+import org.apache.commons.compress.utils.IOUtils;
+import org.orienteer.jnpm.JNPM;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,8 +19,11 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
 
+import io.reactivex.Completable;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class VersionInfo extends AbstractArtifactInfo {
@@ -39,6 +49,31 @@ public class VersionInfo extends AbstractArtifactInfo {
 	private String module;
 	private String types;
 	private boolean sideEffects = false;
+	
+	public Completable downloadTarball() {
+		return Completable.defer(() ->{
+			File file = getLocalTarball();
+			if(file.exists()) return Completable.complete();
+			else {
+				return JNPM.instance().getNpmRegistryService()
+					.downloadFile(getDist().getTarball())
+					.map((r)->{
+						InputStream is = r.body().byteStream();
+						log.info("Trying create file on path: "+file.getAbsolutePath());
+						file.createNewFile();
+						FileOutputStream fos = new FileOutputStream(file);
+						IOUtils.copy(is, fos);
+						is.close();
+						fos.close();
+						return file;
+					}).ignoreElement();
+			}
+		});
+	}
+	
+	public File getLocalTarball() {
+		return JNPM.instance().getSettings().getDownloadDirectory().resolve(getDist().getTarballName()).toFile();
+	}
 	
 	public String getVersionAsString() {
 		return version!=null?version.toString():versionAsString;

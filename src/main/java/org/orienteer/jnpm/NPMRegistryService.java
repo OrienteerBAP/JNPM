@@ -6,9 +6,13 @@ import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
 
 import io.reactivex.Single;
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Streaming;
+import retrofit2.http.Url;
 
 public interface NPMRegistryService {
 
@@ -29,6 +33,10 @@ public interface NPMRegistryService {
 										@Query("quality") Float quality,
 										@Query("popularity") Float popularity,
 										@Query("maintenance") Float maintenance);
+	
+	@Streaming
+    @GET
+    public Single<Response<ResponseBody>> downloadFile(@Url String fileUrl);
 	
 	public default Single<SearchResults> search(String text, Integer size, Integer from) {
 		return search(text, size, from, null, null, null);

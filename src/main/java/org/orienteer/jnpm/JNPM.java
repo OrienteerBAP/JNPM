@@ -1,5 +1,6 @@
 package org.orienteer.jnpm;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,10 +12,12 @@ import org.orienteer.jnpm.dm.VersionInfo;
 import com.github.zafarkhaja.semver.Version;
 
 import io.reactivex.Observable;
+import lombok.extern.slf4j.Slf4j;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+@Slf4j
 public class JNPM 
 {
 	private static JNPM INSTANCE;
@@ -37,16 +40,24 @@ public class JNPM
 		return INSTANCE;
 	}
 	
-	public static JNPM configure(JNPMSettings settings) {
-		INSTANCE = new JNPM(settings);
-		return INSTANCE;
+	public static synchronized JNPM configure(JNPMSettings settings) {
+		if(INSTANCE!=null) throw new IllegalStateException("You can't configure JNPM twise: it's already initiated");
+		try {
+			settings.createAllDirectories();
+			log.info("Settings: "+settings);
+			INSTANCE = new JNPM(settings);
+			return INSTANCE;
+		} catch (Exception e) {
+			log.error("Can't configure JNPM due to problems with settings", e);
+			return null;
+		}
 	}
 	
 	public JNPMSettings getSettings() {
 		return settings;
 	}
 	
-	NPMRegistryService getNpmRegistryService() {
+	public NPMRegistryService getNpmRegistryService() {
 		return registryService;
 	}
 	
