@@ -17,6 +17,17 @@ public class HumanInfo extends AbstractInfo {
 	private String email;
 	private String url;
 	
+	public HumanInfo() {
+		
+	}
+	
+	public HumanInfo(String data) {
+		if(data!=null && data.trim().length()>0) {
+			if(data.contains("@")) email = data;
+			else name = data;
+		}
+	}
+	
 	public String getUsername() {
 		return getName();
 	}

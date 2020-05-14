@@ -1,5 +1,6 @@
 package org.orienteer.jnpm.dm.search;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -28,8 +29,8 @@ public class SearchResultPackage extends AbstractArtifactInfo {
 					setHomepage(entry.getValue());
 					break;
 				case "repository":
-					setRepository(new RepositoryInfo());
-					getRepository().setUrl(entry.getValue());
+					RepositoryInfo rep = new RepositoryInfo();
+					setRepositories(Arrays.asList(rep));
 				case "bugs":
 					setBugsUrl(entry.getValue());
 					break;

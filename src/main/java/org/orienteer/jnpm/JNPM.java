@@ -9,6 +9,9 @@ import java.util.function.Predicate;
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.zafarkhaja.semver.Version;
 
 import io.reactivex.Observable;
@@ -27,9 +30,12 @@ public class JNPM
 	
 	private JNPM(JNPMSettings settings) {
 		this.settings = settings;
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+		mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
 		Retrofit retrofit = new Retrofit.Builder()
 			    .baseUrl(settings.getRegistryUrl())
-			    .addConverterFactory(JacksonConverterFactory.create())
+			    .addConverterFactory(JacksonConverterFactory.create(mapper))
 			    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
 			    .build();
 		registryService = retrofit.create(NPMRegistryService.class);
@@ -70,27 +76,22 @@ public class JNPM
     }
     
     public List<VersionInfo> retrieveVersions(String packageName, String versionConstraint) {
-    	final Predicate<Version> res=JNPMUtils.toPredicate(versionConstraint);
-        if(res!=null) {
-        	return registryService.getPackageInfo(packageName)
-    						.flatMapObservable(p -> Observable.fromIterable(p.getVersions().values()))
-    						.filter(v -> v.satisfies(res))
-    						.sorted().toList().blockingGet();
-        } else {
-        	//It's probably a tag
-        	PackageInfo packageInfo = registryService.getPackageInfo(packageName).blockingGet();
-        	String version = packageInfo.getDistTags().get(versionConstraint);
-        	VersionInfo versionInfo = version!=null?packageInfo.getVersions().get(version):null;
-        	return versionInfo!=null?Arrays.asList(versionInfo):new ArrayList<VersionInfo>();
-        }
+    	return registryService.retrieveVersions(packageName, versionConstraint)
+    			.sorted().toList().blockingGet();
     }
     
     public List<VersionInfo> retrieveVersions(String expression) {
-    	int indx = expression.lastIndexOf('@');
-    	if(indx>0) {
-    		return retrieveVersions(expression.substring(0, indx), expression.substring(indx+1));
-    	} else {
-    		return retrieveVersions(expression, null);
-    	}
+    	return registryService.retrieveVersions(expression)
+    			.sorted().toList().blockingGet();
+    }
+    
+    public VersionInfo bestMatch(String packageName, String versionConstraint) {
+    	List<VersionInfo> list = retrieveVersions(packageName, versionConstraint);
+    	return list.isEmpty()?null:list.get(list.size()-1);
+    }
+    
+    public VersionInfo bestMatch(String expression) {
+    	List<VersionInfo> list = retrieveVersions(expression);
+    	return list.isEmpty()?null:list.get(list.size()-1);
     }
 }

@@ -16,6 +16,7 @@ public class PackageInfo extends AbstractArtifactInfo {
 
 	@JsonProperty("_rev")
 	private String rev;
+	@JsonProperty("dist-tags")
 	private Map<String, String> distTags;
 	private Map<String, VersionInfo> versions;
 	private Map<String, Date> time;

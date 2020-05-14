@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apache.commons.compress.utils.IOUtils;
@@ -20,13 +24,15 @@ import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public class VersionInfo extends AbstractArtifactInfo {
+@JsonNaming
+//@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+public class VersionInfo extends AbstractArtifactInfo implements Comparable<VersionInfo>{
 	
 	@JsonIgnore
 	private Version version;
@@ -49,6 +55,31 @@ public class VersionInfo extends AbstractArtifactInfo {
 	private String module;
 	private String types;
 	private boolean sideEffects = false;
+	
+	public Completable download(boolean getThis, boolean dep, boolean devDep, boolean optDep, boolean peerDep) {
+		final Set<VersionInfo> downloaded = Collections.synchronizedSet(new HashSet<VersionInfo>());
+		return download(downloaded, getThis, dep, devDep, optDep, peerDep);
+	}
+	
+	private Completable download(Set<VersionInfo> context, boolean getThis, boolean dep, boolean devDep, boolean optDep, boolean peerDep) {
+		return Completable.defer(() -> {
+			log.info("Package: "+getName()+"@"+getVersionAsString());
+			Map<String, String> toDownload = new HashMap<>();
+			if(dep && dependencies!=null) toDownload.putAll(dependencies);
+			if(devDep && devDependencies!=null) toDownload.putAll(devDependencies);
+			if(optDep && optionalDependencies!=null) toDownload.putAll(optionalDependencies);
+			if(peerDep && peerDependencies!=null) toDownload.putAll(peerDependencies);
+			log.info("To Download:"+toDownload);
+			Completable deps =  Observable.fromIterable(toDownload.entrySet())
+								.flatMapMaybe(e-> JNPM.instance().getNpmRegistryService()
+														.bestMatch(e.getKey(), e.getValue()))
+								.doOnError(e -> log.error("Error during handing "+getName()+"@"+getVersionAsString()+" ToDownload: "+toDownload, e))
+								.filter(v -> !context.contains(v))
+								.doOnNext(v -> context.add(v))
+								.flatMapCompletable(v -> v.download(context, true, true, false, false, false));
+			return getThis?Completable.mergeArray(downloadTarball(), deps):deps;
+		});
+	}
 	
 	public Completable downloadTarball() {
 		return Completable.defer(() ->{
@@ -100,6 +131,14 @@ public class VersionInfo extends AbstractArtifactInfo {
 	
 	public boolean satisfies(Predicate<Version> predicate) {
 		return version!=null && predicate.test(version);
+	}
+
+	@Override
+	public int compareTo(VersionInfo o) {
+		Version version = getVersion();
+		Version thatVersion = o.getVersion();
+		if(version!=null && thatVersion!=null) return version.compareTo(thatVersion);
+		else return getVersionAsString().compareTo(o.getVersionAsString());
 	}
 	
 }
