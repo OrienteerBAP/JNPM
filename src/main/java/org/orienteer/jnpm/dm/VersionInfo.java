@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,8 +24,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
 
+import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
+import io.reactivex.parallel.ParallelFlowable;
+import io.reactivex.schedulers.Schedulers;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,26 +64,39 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	
 	public Completable download(boolean getThis, boolean dep, boolean devDep, boolean optDep, boolean peerDep) {
 		final Set<VersionInfo> downloaded = Collections.synchronizedSet(new HashSet<VersionInfo>());
-		return download(downloaded, getThis, dep, devDep, optDep, peerDep);
+		return download(downloaded, getThis, dep, devDep, optDep, peerDep)
+				.doOnComplete(() -> log.info("Total downloaded packages size: "+downloaded.size()));
 	}
 	
 	private Completable download(Set<VersionInfo> context, boolean getThis, boolean dep, boolean devDep, boolean optDep, boolean peerDep) {
 		return Completable.defer(() -> {
 			log.info("Package: "+getName()+"@"+getVersionAsString());
+			List<Completable>  setToDo = new ArrayList<>();
+			if(getThis) setToDo.add(downloadTarball());
+			
 			Map<String, String> toDownload = new HashMap<>();
 			if(dep && dependencies!=null) toDownload.putAll(dependencies);
 			if(devDep && devDependencies!=null) toDownload.putAll(devDependencies);
 			if(optDep && optionalDependencies!=null) toDownload.putAll(optionalDependencies);
 			if(peerDep && peerDependencies!=null) toDownload.putAll(peerDependencies);
 			log.info("To Download:"+toDownload);
-			Completable deps =  Observable.fromIterable(toDownload.entrySet())
-								.flatMapMaybe(e-> JNPM.instance().getNpmRegistryService()
-														.bestMatch(e.getKey(), e.getValue()))
-								.doOnError(e -> log.error("Error during handing "+getName()+"@"+getVersionAsString()+" ToDownload: "+toDownload, e))
-								.filter(v -> !context.contains(v))
-								.doOnNext(v -> context.add(v))
-								.flatMapCompletable(v -> v.download(context, true, true, false, false, false));
-			return getThis?Completable.mergeArray(downloadTarball(), deps):deps;
+			
+			if(!toDownload.isEmpty()) {
+				//Need to download first and then go deeper
+				Flowable<VersionInfo> cachedDependencies = Observable.fromIterable(toDownload.entrySet())
+											.flatMapMaybe(e-> JNPM.instance().getNpmRegistryService()
+																.bestMatch(e.getKey(), e.getValue()))
+											.doOnError(e -> log.error("Error during handing "+getName()+"@"+getVersionAsString()+" ToDownload: "+toDownload, e))
+											.filter(v -> !context.contains(v))
+											.doOnNext(v -> context.add(v))
+											.cache()
+											.toFlowable(BackpressureStrategy.BUFFER);
+				// Download tarballs first
+				setToDo.add(cachedDependencies.flatMapCompletable(v -> v.downloadTarball()));
+				// Go to dependencies
+				setToDo.add(cachedDependencies.flatMapCompletable(v -> v.download(context, false, true, false, false, false)));
+			}
+			return Completable.concat(setToDo);
 		});
 	}
 	
@@ -99,7 +118,7 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 						return file;
 					}).ignoreElement();
 			}
-		});
+		}).subscribeOn(Schedulers.io());
 	}
 	
 	public File getLocalTarball() {

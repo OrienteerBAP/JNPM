@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.zafarkhaja.semver.Version;
 
 import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -36,7 +37,7 @@ public class JNPM
 		Retrofit retrofit = new Retrofit.Builder()
 			    .baseUrl(settings.getRegistryUrl())
 			    .addConverterFactory(JacksonConverterFactory.create(mapper))
-			    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+			    .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
 			    .build();
 		registryService = retrofit.create(NPMRegistryService.class);
 	}
