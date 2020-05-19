@@ -3,15 +3,15 @@ package org.orienteer.jnpm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.orienteer.jnpm.ITraversalRule.DEPENDENCIES;
+import static org.orienteer.jnpm.ITraversalRule.DEV_DEPENDENCIES;
+import static org.orienteer.jnpm.ITraversalRule.combine;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
-import javax.imageio.spi.RegisterableService;
-
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
@@ -20,10 +20,6 @@ import org.orienteer.jnpm.dm.search.SearchResults;
 
 import io.reactivex.Single;
 import lombok.extern.slf4j.Slf4j;
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
-import retrofit2.converter.jackson.JacksonConverterFactory;
 
 /**
  * Unit test for simple App.
@@ -103,7 +99,7 @@ public class JNPMTest
     	File localFile = versionInfo.getLocalTarball();
     	if(localFile.exists()) localFile.delete();
     	log.info("version = "+versionInfo);
-    	versionInfo.download(true, true, true, false, false).blockingAwait(20, TimeUnit.SECONDS);
+    	versionInfo.download(true, combine(DEPENDENCIES, DEV_DEPENDENCIES)).blockingAwait(20, TimeUnit.SECONDS);
     	assertTrue(localFile.exists());
     }
     

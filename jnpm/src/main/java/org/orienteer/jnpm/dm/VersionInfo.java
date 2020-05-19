@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apache.commons.compress.utils.IOUtils;
+import org.orienteer.jnpm.ITraversalRule;
 import org.orienteer.jnpm.JNPMService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -62,23 +63,19 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	private String types;
 	private boolean sideEffects = false;
 	
-	public Completable download(boolean getThis, boolean dep, boolean devDep, boolean optDep, boolean peerDep) {
+	public Completable download(boolean getThis, ITraversalRule rule) {
 		final Set<VersionInfo> downloaded = Collections.synchronizedSet(new HashSet<VersionInfo>());
-		return download(downloaded, getThis, dep, devDep, optDep, peerDep)
+		return download(downloaded, getThis, rule)
 				.doOnComplete(() -> log.info("Total downloaded packages size: "+downloaded.size()));
 	}
 	
-	private Completable download(Set<VersionInfo> context, boolean getThis, boolean dep, boolean devDep, boolean optDep, boolean peerDep) {
+	private Completable download(Set<VersionInfo> context, boolean getThis, ITraversalRule rule) {
 		return Completable.defer(() -> {
 			log.info("Package: "+getName()+"@"+getVersionAsString());
 			List<Completable>  setToDo = new ArrayList<>();
 			if(getThis) setToDo.add(downloadTarball());
 			
-			Map<String, String> toDownload = new HashMap<>();
-			if(dep && dependencies!=null) toDownload.putAll(dependencies);
-			if(devDep && devDependencies!=null) toDownload.putAll(devDependencies);
-			if(optDep && optionalDependencies!=null) toDownload.putAll(optionalDependencies);
-			if(peerDep && peerDependencies!=null) toDownload.putAll(peerDependencies);
+			Map<String, String> toDownload = getNextDependencies(rule);
 			log.info("To Download:"+toDownload);
 			
 			if(!toDownload.isEmpty()) {
@@ -94,7 +91,7 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 				// Download tarballs first
 				setToDo.add(cachedDependencies.flatMapCompletable(v -> v.downloadTarball()));
 				// Go to dependencies
-				setToDo.add(cachedDependencies.flatMapCompletable(v -> v.download(context, false, true, false, false, false)));
+				setToDo.add(cachedDependencies.flatMapCompletable(v -> v.download(context, false, ITraversalRule.DEPENDENCIES)));
 			}
 			return Completable.concat(setToDo);
 		});
@@ -119,6 +116,10 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 					}).ignoreElement();
 			}
 		}).subscribeOn(Schedulers.io());
+	}
+	
+	public Map<String, String> getNextDependencies(ITraversalRule rule) {
+		return rule.getNextDependencies(this);
 	}
 	
 	public File getLocalTarball() {
