@@ -1,4 +1,4 @@
-package org.orienteer.jnpm;
+package org.orienteer.jnpm.traversal;
 
 import java.util.HashMap;
 import java.util.Map;

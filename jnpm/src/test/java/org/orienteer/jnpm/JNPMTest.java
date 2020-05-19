@@ -3,9 +3,9 @@ package org.orienteer.jnpm;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.orienteer.jnpm.ITraversalRule.DEPENDENCIES;
-import static org.orienteer.jnpm.ITraversalRule.DEV_DEPENDENCIES;
-import static org.orienteer.jnpm.ITraversalRule.combine;
+import static org.orienteer.jnpm.traversal.ITraversalRule.DEPENDENCIES;
+import static org.orienteer.jnpm.traversal.ITraversalRule.DEV_DEPENDENCIES;
+import static org.orienteer.jnpm.traversal.ITraversalRule.combine;
 
 import java.io.File;
 import java.io.IOException;
