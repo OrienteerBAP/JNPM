@@ -17,6 +17,7 @@ import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
+import org.orienteer.jnpm.traversal.TraversalContext;
 
 import io.reactivex.Single;
 import lombok.extern.slf4j.Slf4j;
@@ -99,8 +100,11 @@ public class JNPMTest
     	File localFile = versionInfo.getLocalTarball();
     	if(localFile.exists()) localFile.delete();
     	log.info("version = "+versionInfo);
-    	versionInfo.download(true, combine(DEPENDENCIES, DEV_DEPENDENCIES)).blockingAwait(20, TimeUnit.SECONDS);
+    	TraversalContext res = versionInfo.download(true, DEPENDENCIES, DEV_DEPENDENCIES)
+					    		.doOnSuccess(ctx -> log.info("Downloaded "+ctx.getTraversed().size()))
+					    		.blockingGet();
     	assertTrue(localFile.exists());
+    	assertTrue(res.getTraversed().size()>1000);
     }
     
     @Test

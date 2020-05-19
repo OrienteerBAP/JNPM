@@ -18,6 +18,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.ITraversalVisitor;
+import org.orienteer.jnpm.traversal.TraversalContext;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,6 +33,7 @@ import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
+import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.schedulers.Schedulers;
@@ -66,21 +68,23 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	private String types;
 	private boolean sideEffects = false;
 	
-	public Completable traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, ITraversalVisitor visitor) {
-		return traverse(direction, doForThis, rule, visitor::visitCompletable);
+	public Single<TraversalContext> traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, ITraversalVisitor visitor) {
+		TraversalContext ctx = new TraversalContext(direction, visitor);
+		return traverse(ctx, doForThis, rule)
+				.toSingleDefault(ctx);
 	}
 	
-	public Completable traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, Function<VersionInfo, Completable> visitCompletable) {
-		final Set<VersionInfo> downloaded = Collections.synchronizedSet(new HashSet<VersionInfo>());
-		return traverse(direction, downloaded, doForThis, rule, visitCompletable)
-				.doOnComplete(() -> log.info("Total downloaded packages size: "+downloaded.size()));
+	public Single<TraversalContext> traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, Function<VersionInfo, Completable> visitCompletableFunction) {
+		TraversalContext ctx = new TraversalContext(direction, visitCompletableFunction);
+		return traverse(ctx, doForThis, rule)
+				.toSingleDefault(ctx);
 	}
 	
-	private Completable traverse(TraverseDirection direction, Set<VersionInfo> context, boolean doForThis, ITraversalRule rule, Function<VersionInfo, Completable> visitCompletable) {
+	private Completable traverse(TraversalContext ctx, boolean doForThis, ITraversalRule rule) {
 		return Completable.defer(() -> {
 			log.info("Package: "+getName()+"@"+getVersionAsString());
 			List<Completable>  setToDo = new ArrayList<>();
-			if(doForThis) setToDo.add(visitCompletable.apply(this));
+			if(doForThis) setToDo.add(ctx.visitCompletable(this));
 			
 			Map<String, String> toDownload = getNextDependencies(rule);
 			log.info("To Download:"+toDownload);
@@ -91,20 +95,20 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 											.flatMapMaybe(e-> JNPMService.instance().getRxService()
 																.bestMatch(e.getKey(), e.getValue()))
 											.doOnError(e -> log.error("Error during handing "+getName()+"@"+getVersionAsString()+" ToDownload: "+toDownload, e))
-											.filter(v -> !context.contains(v))
-											.doOnNext(v -> context.add(v))
+											.filter(v -> !ctx.alreadyTraversed(v))
+											.doOnNext(v -> ctx.markTraversed(v))
 											.cache()
 											.toFlowable(BackpressureStrategy.BUFFER);
-				switch (direction) {
+				switch (ctx.getDirection()) {
 					case WIDER:
 						// Download tarballs first
-						setToDo.add(cachedDependencies.flatMapCompletable(visitCompletable));
+						setToDo.add(cachedDependencies.flatMapCompletable(ctx.getVisitCompletableFunction()));
 						// Go to dependencies
-						setToDo.add(cachedDependencies.flatMapCompletable(v -> v.traverse(direction, context, false, ITraversalRule.DEPENDENCIES, visitCompletable)));
+						setToDo.add(cachedDependencies.flatMapCompletable(v -> v.traverse(ctx, false, ITraversalRule.DEPENDENCIES)));
 						break;
 					case DEEPER:
 						// Go to dependencies right away
-						setToDo.add(cachedDependencies.flatMapCompletable(v -> v.traverse(direction, context, true, ITraversalRule.DEPENDENCIES, visitCompletable)));
+						setToDo.add(cachedDependencies.flatMapCompletable(v -> v.traverse(ctx, true, ITraversalRule.DEPENDENCIES)));
 						break;
 				}
 			}
@@ -112,8 +116,8 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 		});
 	}
 	
-	public Completable download(boolean getThis, ITraversalRule rule) {
-		return traverse(TraverseDirection.WIDER, getThis, rule, VersionInfo::downloadTarball);
+	public Single<TraversalContext> download(boolean getThis, ITraversalRule... rules) {
+		return traverse(TraverseDirection.WIDER, getThis, ITraversalRule.combine(rules), VersionInfo::downloadTarball);
 	}
 	
 	
