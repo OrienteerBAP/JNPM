@@ -32,20 +32,20 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 public class JNPMTest 
 {
 	static {
-		JNPM.configure(JNPMSettings.builder()
+		JNPMService.configure(JNPMSettings.builder()
 						.homeDirectory(Paths.get("target", ".jnpm"))
  						.build());
 	}
 	
     @Test
     public void registryInfoRetrival() throws IOException {
-    	Single<RegistryInfo> info = JNPM.instance().getNpmRegistryService().getRegistryInfo();
+    	Single<RegistryInfo> info = JNPMService.instance().getRxService().getRegistryInfo();
     	assertNotNull(info);
     }
     
     @Test
     public void packageInfoRetrival() throws IOException {
-    	PackageInfo packageInfo = JNPM.instance().retrievePackageInfo("vue");
+    	PackageInfo packageInfo = JNPMService.instance().getPackageInfo("vue");
     	assertNotNull(packageInfo);
     	assertNotNull(packageInfo.getDistTags());
     	assertTrue(packageInfo.getDistTags().containsKey("latest"));
@@ -53,7 +53,7 @@ public class JNPMTest
     
     @Test
     public void versionInforetrival() throws IOException {
-    	VersionInfo versionInfo = JNPM.instance().retrieveVersion("vue", "2.6.11");
+    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
     	assertNotNull(versionInfo);
     	assertNotNull(versionInfo.getVersion());
     	assertNotNull(versionInfo.getDist());
@@ -68,27 +68,27 @@ public class JNPMTest
     
     @Test
     public void cornerCasesOfDeserialization() throws IOException {
-    	VersionInfo versionInfo = JNPM.instance().bestMatch("semver", "^5.6.0");
+    	VersionInfo versionInfo = JNPMService.instance().bestMatch("semver", "^5.6.0");
     	assertNotNull(versionInfo);
     	assertNotNull(versionInfo.getVersion());
     	assertNotNull(versionInfo.getDist());
     	assertNotNull(versionInfo.getDist().getTarballName());
     	assertNotNull(versionInfo.getLicenses());
     	assertNotNull(versionInfo.getLicenses().get(0).getType());
-    	versionInfo = JNPM.instance().bestMatch("socket.io", "2.1.1");
-    	versionInfo = JNPM.instance().bestMatch("merge-stream", "^2.0.0");
-    	versionInfo = JNPM.instance().bestMatch("tmp", "^0.0.33");
-    	versionInfo = JNPM.instance().bestMatch("fs-extra", "^1.0.0");
+    	versionInfo = JNPMService.instance().bestMatch("socket.io", "2.1.1");
+    	versionInfo = JNPMService.instance().bestMatch("merge-stream", "^2.0.0");
+    	versionInfo = JNPMService.instance().bestMatch("tmp", "^0.0.33");
+    	versionInfo = JNPMService.instance().bestMatch("fs-extra", "^1.0.0");
     	
-    	versionInfo = JNPM.instance().bestMatch("buffer-crc32", "0.2.1");
+    	versionInfo = JNPMService.instance().bestMatch("buffer-crc32", "0.2.1");
     	assertNotNull(versionInfo.getContributors());
-    	versionInfo = JNPM.instance().bestMatch("buffer-crc32", "0.2.0");
-    	versionInfo = JNPM.instance().bestMatch("performance-now", "^2.1.0");
+    	versionInfo = JNPMService.instance().bestMatch("buffer-crc32", "0.2.0");
+    	versionInfo = JNPMService.instance().bestMatch("performance-now", "^2.1.0");
     }
     
     @Test
     public void downloadTarball() throws IOException {
-    	VersionInfo versionInfo = JNPM.instance().retrieveVersion("vue", "2.6.11");
+    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
     	assertNotNull(versionInfo);
     	File localFile = versionInfo.getLocalTarball();
     	if(localFile.exists()) localFile.delete();
@@ -98,7 +98,7 @@ public class JNPMTest
     
     @Test
     public void downloadWithDevDependencies() throws IOException {
-    	VersionInfo versionInfo = JNPM.instance().retrieveVersion("vue", "2.6.11");
+    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
     	assertNotNull(versionInfo);
     	File localFile = versionInfo.getLocalTarball();
     	if(localFile.exists()) localFile.delete();
@@ -109,10 +109,10 @@ public class JNPMTest
     
     @Test
     public void searchTest() throws IOException {
-    	Single<SearchResults> searchResults = JNPM.instance().getNpmRegistryService().search("vue", null, null, null, null, null);
+    	Single<SearchResults> searchResults = JNPMService.instance().getRxService().search("vue", null, null, null, null, null);
     	assertNotNull(searchResults);
     	
-    	searchResults = JNPM.instance().getNpmRegistryService().search("vue", null, null);
+    	searchResults = JNPMService.instance().getRxService().search("vue", null, null);
     	assertNotNull(searchResults);
     }
 }

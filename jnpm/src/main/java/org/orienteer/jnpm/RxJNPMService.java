@@ -23,7 +23,7 @@ import retrofit2.http.Query;
 import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
-public interface NPMRegistryService {
+public interface RxJNPMService {
 
 	@GET("/")
 	public Single<RegistryInfo> getRegistryInfo();

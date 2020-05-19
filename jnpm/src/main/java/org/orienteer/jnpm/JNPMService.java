@@ -22,14 +22,14 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 @Slf4j
-public class JNPM 
+public class JNPMService 
 {
-	private static JNPM INSTANCE;
+	private static JNPMService INSTANCE;
 	
 	private JNPMSettings settings;
-	private NPMRegistryService registryService;
+	private RxJNPMService rxService;
 	
-	private JNPM(JNPMSettings settings) {
+	private JNPMService(JNPMSettings settings) {
 		this.settings = settings;
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
@@ -39,20 +39,20 @@ public class JNPM
 			    .addConverterFactory(JacksonConverterFactory.create(mapper))
 			    .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
 			    .build();
-		registryService = retrofit.create(NPMRegistryService.class);
+		rxService = retrofit.create(RxJNPMService.class);
 	}
 	
-	public static JNPM instance() {
+	public static JNPMService instance() {
 		if(INSTANCE==null) throw new IllegalStateException("Configure JNPM instance first by calling JNPM.configure(settings)");
 		return INSTANCE;
 	}
 	
-	public static synchronized JNPM configure(JNPMSettings settings) {
+	public static synchronized JNPMService configure(JNPMSettings settings) {
 		if(INSTANCE!=null) throw new IllegalStateException("You can't configure JNPM twise: it's already initiated");
 		try {
 			settings.createAllDirectories();
 			log.info("Settings: "+settings);
-			INSTANCE = new JNPM(settings);
+			INSTANCE = new JNPMService(settings);
 			return INSTANCE;
 		} catch (Exception e) {
 			log.error("Can't configure JNPM due to problems with settings", e);
@@ -64,35 +64,33 @@ public class JNPM
 		return settings;
 	}
 	
-	public NPMRegistryService getNpmRegistryService() {
-		return registryService;
+	public RxJNPMService getRxService() {
+		return rxService;
 	}
 	
-	public PackageInfo retrievePackageInfo(String packageName) {
-    	return registryService.getPackageInfo(packageName).blockingGet();
+	public PackageInfo getPackageInfo(String packageName) {
+    	return rxService.getPackageInfo(packageName).blockingGet();
     }
 	
-    public VersionInfo retrieveVersion(String packageName, String version) {
-    	return registryService.getVersionInfo(packageName, version).blockingGet();
+    public VersionInfo getVersionInfo(String packageName, String version) {
+    	return rxService.getVersionInfo(packageName, version).blockingGet();
     }
     
     public List<VersionInfo> retrieveVersions(String packageName, String versionConstraint) {
-    	return registryService.retrieveVersions(packageName, versionConstraint)
+    	return rxService.retrieveVersions(packageName, versionConstraint)
     			.sorted().toList().blockingGet();
     }
     
     public List<VersionInfo> retrieveVersions(String expression) {
-    	return registryService.retrieveVersions(expression)
+    	return rxService.retrieveVersions(expression)
     			.sorted().toList().blockingGet();
     }
     
     public VersionInfo bestMatch(String packageName, String versionConstraint) {
-    	List<VersionInfo> list = retrieveVersions(packageName, versionConstraint);
-    	return list.isEmpty()?null:list.get(list.size()-1);
+    	return rxService.bestMatch(packageName, versionConstraint).blockingGet();
     }
     
     public VersionInfo bestMatch(String expression) {
-    	List<VersionInfo> list = retrieveVersions(expression);
-    	return list.isEmpty()?null:list.get(list.size()-1);
+    	return rxService.bestMatch(expression).blockingGet();
     }
 }

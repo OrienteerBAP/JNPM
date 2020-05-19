@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.apache.commons.compress.utils.IOUtils;
-import org.orienteer.jnpm.JNPM;
+import org.orienteer.jnpm.JNPMService;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -84,7 +84,7 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 			if(!toDownload.isEmpty()) {
 				//Need to download first and then go deeper
 				Flowable<VersionInfo> cachedDependencies = Observable.fromIterable(toDownload.entrySet())
-											.flatMapMaybe(e-> JNPM.instance().getNpmRegistryService()
+											.flatMapMaybe(e-> JNPMService.instance().getRxService()
 																.bestMatch(e.getKey(), e.getValue()))
 											.doOnError(e -> log.error("Error during handing "+getName()+"@"+getVersionAsString()+" ToDownload: "+toDownload, e))
 											.filter(v -> !context.contains(v))
@@ -105,7 +105,7 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 			File file = getLocalTarball();
 			if(file.exists()) return Completable.complete();
 			else {
-				return JNPM.instance().getNpmRegistryService()
+				return JNPMService.instance().getRxService()
 					.downloadFile(getDist().getTarball())
 					.map((r)->{
 						InputStream is = r.body().byteStream();
@@ -122,7 +122,7 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	}
 	
 	public File getLocalTarball() {
-		return JNPM.instance().getSettings().getDownloadDirectory().resolve(getDist().getTarballName()).toFile();
+		return JNPMService.instance().getSettings().getDownloadDirectory().resolve(getDist().getTarballName()).toFile();
 	}
 	
 	public String getVersionAsString() {
