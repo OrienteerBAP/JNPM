@@ -3,18 +3,30 @@ package org.orienteer.jnpm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
+import org.orienteer.jnpm.traversal.ITraversalRule;
+import org.orienteer.jnpm.traversal.ITraversalVisitor;
+import org.orienteer.jnpm.traversal.TraversalContext;
+import org.orienteer.jnpm.traversal.TraversalTree;
+import org.orienteer.jnpm.traversal.TraverseDirection;
+import org.slf4j.Logger;
 
 import com.github.zafarkhaja.semver.Version;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.functions.Function;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
 import retrofit2.http.GET;
@@ -91,5 +103,50 @@ public interface RxJNPMService {
     public default Maybe<VersionInfo> bestMatch(String expression) {
     	return retrieveVersions(expression).sorted().lastElement();
     }
+   
+	
+	public default Observable<TraversalTree> traverse(VersionInfo rootVersion, TraverseDirection direction, boolean doForThis, ITraversalRule rule) {
+		TraversalContext ctx = new TraversalContext(rootVersion, direction, (ITraversalVisitor) null);
+		return traverse(ctx, null, rootVersion, doForThis, rule);
+	}
+    
+	public default Observable<TraversalTree> traverse(TraversalContext ctx, TraversalTree parentTree, VersionInfo version, boolean doForThis, ITraversalRule rule) {
+		return Observable.defer(() -> {
+			Logger log = ctx.getLogger();
+			log.info("Package: "+version.getName()+"@"+version.getVersionAsString());
+			
+			final TraversalTree thisTree = parentTree!=null?new TraversalTree(ctx, parentTree, version):ctx.getRootTree(); 
+			List<Observable<TraversalTree>>  setToDo = new ArrayList<>();
+			if(doForThis) setToDo.add(Observable.just(thisTree).doOnNext(TraversalTree::commitAsChild));
+			
+			Map<String, String> toDownload = rule.getNextDependencies(version);
+			
+			if(!toDownload.isEmpty()) {
+				//Need to download first and then go deeper
+				Observable<VersionInfo> cachedDependencies = Observable.fromIterable(toDownload.entrySet())
+											.flatMapMaybe(e-> JNPMService.instance().getRxService()
+																.bestMatch(e.getKey(), e.getValue()))
+											.doOnError(e -> log.error("Error during handing "+version.getName()+"@"+version.getVersionAsString()+" ToDownload: "+toDownload, e))
+											.filter(v -> !ctx.alreadyTraversed(v))
+											.doOnNext(v -> ctx.markTraversed(v))
+											.cache();
+				switch (ctx.getDirection()) {
+					case WIDER:
+						// Go wider first
+						setToDo.add(cachedDependencies
+								.map(v ->  new TraversalTree(ctx, thisTree, v))
+								.doOnNext(TraversalTree::commitAsChild));
+						// Go to dependencies
+						setToDo.add(cachedDependencies.flatMap(v -> traverse(ctx, thisTree, v, false, ITraversalRule.DEPENDENCIES)));
+						break;
+					case DEEPER:
+						// Go to dependencies right away
+						setToDo.add(cachedDependencies.flatMap(v -> traverse(ctx, thisTree, v, true, ITraversalRule.DEPENDENCIES)));
+						break;
+				}
+			}
+			return Observable.concat(setToDo);
+		});
+	}
 
 }

@@ -10,6 +10,7 @@ import static org.orienteer.jnpm.traversal.ITraversalRule.combine;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -17,9 +18,14 @@ import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
+import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.TraversalContext;
+import org.orienteer.jnpm.traversal.TraversalTree;
+import org.orienteer.jnpm.traversal.TraverseDirection;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
+import io.reactivex.observers.TestObserver;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -105,6 +111,30 @@ public class JNPMTest
 					    		.blockingGet();
     	assertTrue(localFile.exists());
     	assertTrue(res.getTraversed().size()>1000);
+    }
+    
+    @Test
+    public void traversal() throws IOException {
+    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
+    	assertNotNull(versionInfo);
+    	
+    	Observable<TraversalTree> traversal = JNPMService.instance().getRxService()
+									    		.traverse(versionInfo, 
+									    				  TraverseDirection.WIDER, 
+									    				  true, 
+									    				  ITraversalRule.combine(DEPENDENCIES, DEV_DEPENDENCIES));
+    	TestObserver<TraversalContext> test = traversal.doOnNext(t -> log.info("Traverse Version: "+t.getVersion()))
+								     			.lastElement()
+								    			.map(TraversalTree::getContext)
+								    			.doOnSuccess(ctx -> log.info("Retrieved: "+ctx.getTraversed().size()))
+								    			.test();
+    	List<TraversalContext> ctxs = test.awaitDone(20, TimeUnit.SECONDS)
+				.values();
+    	assertNotNull(ctxs);
+    	assertEquals(1, ctxs.size());
+    	TraversalContext ctx = ctxs.get(0);
+    	
+    	test.dispose();
     }
     
     @Test

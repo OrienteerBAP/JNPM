@@ -69,13 +69,13 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	private boolean sideEffects = false;
 	
 	public Single<TraversalContext> traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, ITraversalVisitor visitor) {
-		TraversalContext ctx = new TraversalContext(direction, visitor);
+		TraversalContext ctx = new TraversalContext(null, direction, visitor);
 		return traverse(ctx, doForThis, rule)
 				.toSingleDefault(ctx);
 	}
 	
 	public Single<TraversalContext> traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, Function<VersionInfo, Completable> visitCompletableFunction) {
-		TraversalContext ctx = new TraversalContext(direction, visitCompletableFunction);
+		TraversalContext ctx = new TraversalContext(null, direction, visitCompletableFunction);
 		return traverse(ctx, doForThis, rule)
 				.toSingleDefault(ctx);
 	}
