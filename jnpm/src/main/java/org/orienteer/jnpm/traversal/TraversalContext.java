@@ -1,7 +1,9 @@
 package org.orienteer.jnpm.traversal;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.orienteer.jnpm.dm.VersionInfo;
@@ -26,7 +28,7 @@ public class TraversalContext {
 	private Function<VersionInfo, Completable> visitCompletableFunction;
 	
 	@Getter(AccessLevel.NONE)
-	private Set<VersionInfo> traversed = Collections.synchronizedSet(new HashSet<VersionInfo>());
+	private Map<VersionInfo, TraversalTree> traversed = Collections.synchronizedMap(new HashMap<VersionInfo, TraversalTree>());
 	
 	public TraversalContext(VersionInfo rootVersion, TraverseDirection direction, ITraversalVisitor visitor) {
 		this.rootTree = new TraversalTree(this, null, rootVersion);
@@ -46,16 +48,17 @@ public class TraversalContext {
 		return visitCompletableFunction.apply(version);
 	}
 	
-	public boolean alreadyTraversed(VersionInfo version) {
-		return traversed.contains(version);
+	public boolean alreadyTraversed(VersionInfo version, TraversalTree thisTree) {
+		TraversalTree traversedInThatTree = traversed.get(version);
+		return traversedInThatTree!=null && !traversedInThatTree.equals(thisTree);
 	}
 	
-	public void markTraversed(VersionInfo version) {
-		traversed.add(version);
+	public void markTraversed(VersionInfo version, TraversalTree tree) {
+		traversed.putIfAbsent(version, tree);
 	}
 	
 	public Set<VersionInfo> getTraversed() {
-		return Collections.unmodifiableSet(traversed);
+		return Collections.unmodifiableSet(traversed.keySet());
 	}
 	
 	public Logger getLogger() {

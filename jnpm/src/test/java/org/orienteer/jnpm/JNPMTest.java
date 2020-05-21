@@ -1,5 +1,7 @@
 package org.orienteer.jnpm;
 
+import static org.mockito.Mockito.*;
+import static org.mockito.AdditionalAnswers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -10,7 +12,9 @@ import static org.orienteer.jnpm.traversal.ITraversalRule.combine;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -23,6 +27,7 @@ import org.orienteer.jnpm.traversal.TraversalContext;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.observers.TestObserver;
@@ -106,11 +111,65 @@ public class JNPMTest
     	File localFile = versionInfo.getLocalTarball();
     	if(localFile.exists()) localFile.delete();
     	log.info("version = "+versionInfo);
-    	TraversalContext res = versionInfo.download(true, DEPENDENCIES, DEV_DEPENDENCIES)
-					    		.doOnSuccess(ctx -> log.info("Downloaded "+ctx.getTraversed().size()))
-					    		.blockingGet();
+    	versionInfo.download(true, DEPENDENCIES, DEV_DEPENDENCIES).blockingAwait();
     	assertTrue(localFile.exists());
-    	assertTrue(res.getTraversed().size()>1000);
+    }
+    
+    @Test
+    public void mockedTraversal() throws Exception {
+    	JNPMService jnpm = JNPMService.instance();
+    	RxJNPMService rxJnpm = jnpm.getRxService();
+    	
+    	JNPMService spyJnpm = spy(jnpm);
+    	RxJNPMService spyRxJnpm = mock(RxJNPMService.class, delegatesTo(rxJnpm));
+    	doReturn(spyRxJnpm).when(spyJnpm).getRxService();
+    	
+    	JNPMService original = JNPMService.instance(spyJnpm);
+    	
+    	try {
+			VersionInfo a = new VersionInfo();
+			a.setName("a");
+			a.setVersionAsString("1.0.0");
+			Map<String, String> depA = new HashMap<String, String>();
+			depA.put("b", "2.0.0");
+			a.setDependencies(depA);
+			
+			VersionInfo b = new VersionInfo();
+			b.setName("b");
+			b.setVersionAsString("2.0.0");
+			Map<String, String> depB = new HashMap<String, String>();
+			depB.put("a", "1.0.0");
+			b.setDependencies(depB);
+			
+			doReturn(a).when(spyJnpm).getVersionInfo("a", "1.0.0");
+			when(spyRxJnpm.bestMatch("b", "2.0.0")).thenReturn(Maybe.just(b));
+			when(spyRxJnpm.bestMatch("a", "1.0.0")).thenReturn(Maybe.just(a));
+			
+			assertEquals("a", JNPMService.instance().getVersionInfo("a", "1.0.0").getName());
+			assertEquals("1.0.0", JNPMService.instance().getVersionInfo("a", "1.0.0").getVersionAsString());
+			assertEquals(a, JNPMService.instance().getRxService().bestMatch("a", "1.0.0").blockingGet());
+			assertEquals(b, JNPMService.instance().getRxService().bestMatch("b", "2.0.0").blockingGet());
+			
+			Observable<TraversalTree> traversal = JNPMService.instance().getRxService()
+					.traverse(a, 
+							  TraverseDirection.WIDER, 
+							  true, 
+							  DEPENDENCIES);
+			TestObserver<TraversalTree> test = traversal.doOnNext(t->log.info("Traverse"+t)).test();
+			test.await(5, TimeUnit.SECONDS);
+			test.assertComplete();
+			List<TraversalTree> trace = test.values();
+			assertNotNull(trace);
+			assertEquals(3, trace.size());
+			assertEquals(a, trace.get(0).getVersion());
+			assertEquals(0, trace.get(0).getLevel());
+			assertEquals(b, trace.get(1).getVersion());
+			assertEquals(1, trace.get(1).getLevel());
+			assertEquals(a, trace.get(2).getVersion());
+			assertEquals(2, trace.get(2).getLevel());
+		} finally {
+			JNPMService.instance(original);
+		}
     }
     
     @Test
@@ -123,7 +182,7 @@ public class JNPMTest
 									    				  TraverseDirection.WIDER, 
 									    				  true, 
 									    				  ITraversalRule.combine(DEPENDENCIES, DEV_DEPENDENCIES));
-    	TestObserver<TraversalContext> test = traversal.doOnNext(t -> log.info("Traverse Version: "+t.getVersion()))
+    	TestObserver<TraversalContext> test = traversal.doOnNext(t -> log.info("Traverse: "+t))
 								     			.lastElement()
 								    			.map(TraversalTree::getContext)
 								    			.doOnSuccess(ctx -> log.info("Retrieved: "+ctx.getTraversed().size()))

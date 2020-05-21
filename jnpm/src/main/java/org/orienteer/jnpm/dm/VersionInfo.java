@@ -38,17 +38,18 @@ import io.reactivex.functions.Function;
 import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
 @JsonNaming
-//@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class VersionInfo extends AbstractArtifactInfo implements Comparable<VersionInfo>{
 	
 	@JsonIgnore
 	private Version version;
-	private String versionAsString;
+	@ToString.Include private String versionAsString;
 	private String main;
 	private Map<String, String> scripts;
 	private Map<String, String> gitHooks;
@@ -68,56 +69,50 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	private String types;
 	private boolean sideEffects = false;
 	
-	public Single<TraversalContext> traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, ITraversalVisitor visitor) {
-		TraversalContext ctx = new TraversalContext(null, direction, visitor);
-		return traverse(ctx, doForThis, rule)
-				.toSingleDefault(ctx);
-	}
+	/*
+	 * public Single<TraversalContext> traverse(TraverseDirection direction, boolean
+	 * doForThis, ITraversalRule rule, ITraversalVisitor visitor) { TraversalContext
+	 * ctx = new TraversalContext(null, direction, visitor); return traverse(ctx,
+	 * doForThis, rule) .toSingleDefault(ctx); }
+	 * 
+	 * public Single<TraversalContext> traverse(TraverseDirection direction, boolean
+	 * doForThis, ITraversalRule rule, Function<VersionInfo, Completable>
+	 * visitCompletableFunction) { TraversalContext ctx = new TraversalContext(null,
+	 * direction, visitCompletableFunction); return traverse(ctx, doForThis, rule)
+	 * .toSingleDefault(ctx); }
+	 * 
+	 * private Completable traverse(TraversalContext ctx, boolean doForThis,
+	 * ITraversalRule rule) { return Completable.defer(() -> {
+	 * log.info("Package: "+getName()+"@"+getVersionAsString()); List<Completable>
+	 * setToDo = new ArrayList<>(); if(doForThis)
+	 * setToDo.add(ctx.visitCompletable(this));
+	 * 
+	 * Map<String, String> toDownload = getNextDependencies(rule);
+	 * log.info("To Download:"+toDownload);
+	 * 
+	 * if(!toDownload.isEmpty()) { //Need to download first and then go deeper
+	 * Flowable<VersionInfo> cachedDependencies =
+	 * Observable.fromIterable(toDownload.entrySet()) .flatMapMaybe(e->
+	 * JNPMService.instance().getRxService() .bestMatch(e.getKey(), e.getValue()))
+	 * .doOnError(e ->
+	 * log.error("Error during handing "+getName()+"@"+getVersionAsString()
+	 * +" ToDownload: "+toDownload, e)) .filter(v -> !ctx.alreadyTraversed(v))
+	 * .doOnNext(v -> ctx.markTraversed(v)) .cache()
+	 * .toFlowable(BackpressureStrategy.BUFFER); switch (ctx.getDirection()) { case
+	 * WIDER: // Download tarballs first
+	 * setToDo.add(cachedDependencies.flatMapCompletable(ctx.
+	 * getVisitCompletableFunction())); // Go to dependencies
+	 * setToDo.add(cachedDependencies.flatMapCompletable(v -> v.traverse(ctx, false,
+	 * ITraversalRule.DEPENDENCIES))); break; case DEEPER: // Go to dependencies
+	 * right away setToDo.add(cachedDependencies.flatMapCompletable(v ->
+	 * v.traverse(ctx, true, ITraversalRule.DEPENDENCIES))); break; } } return
+	 * Completable.concat(setToDo); }); }
+	 */
 	
-	public Single<TraversalContext> traverse(TraverseDirection direction, boolean doForThis, ITraversalRule rule, Function<VersionInfo, Completable> visitCompletableFunction) {
-		TraversalContext ctx = new TraversalContext(null, direction, visitCompletableFunction);
-		return traverse(ctx, doForThis, rule)
-				.toSingleDefault(ctx);
-	}
-	
-	private Completable traverse(TraversalContext ctx, boolean doForThis, ITraversalRule rule) {
-		return Completable.defer(() -> {
-			log.info("Package: "+getName()+"@"+getVersionAsString());
-			List<Completable>  setToDo = new ArrayList<>();
-			if(doForThis) setToDo.add(ctx.visitCompletable(this));
-			
-			Map<String, String> toDownload = getNextDependencies(rule);
-			log.info("To Download:"+toDownload);
-			
-			if(!toDownload.isEmpty()) {
-				//Need to download first and then go deeper
-				Flowable<VersionInfo> cachedDependencies = Observable.fromIterable(toDownload.entrySet())
-											.flatMapMaybe(e-> JNPMService.instance().getRxService()
-																.bestMatch(e.getKey(), e.getValue()))
-											.doOnError(e -> log.error("Error during handing "+getName()+"@"+getVersionAsString()+" ToDownload: "+toDownload, e))
-											.filter(v -> !ctx.alreadyTraversed(v))
-											.doOnNext(v -> ctx.markTraversed(v))
-											.cache()
-											.toFlowable(BackpressureStrategy.BUFFER);
-				switch (ctx.getDirection()) {
-					case WIDER:
-						// Download tarballs first
-						setToDo.add(cachedDependencies.flatMapCompletable(ctx.getVisitCompletableFunction()));
-						// Go to dependencies
-						setToDo.add(cachedDependencies.flatMapCompletable(v -> v.traverse(ctx, false, ITraversalRule.DEPENDENCIES)));
-						break;
-					case DEEPER:
-						// Go to dependencies right away
-						setToDo.add(cachedDependencies.flatMapCompletable(v -> v.traverse(ctx, true, ITraversalRule.DEPENDENCIES)));
-						break;
-				}
-			}
-			return Completable.concat(setToDo);
-		});
-	}
-	
-	public Single<TraversalContext> download(boolean getThis, ITraversalRule... rules) {
-		return traverse(TraverseDirection.WIDER, getThis, ITraversalRule.combine(rules), VersionInfo::downloadTarball);
+	public Completable download(boolean getThis, ITraversalRule... rules) {
+		return JNPMService.instance().getRxService()
+				.traverse(this, TraverseDirection.WIDER, getThis, ITraversalRule.combine(rules))
+				.flatMapCompletable(t -> t.getVersion().downloadTarball());
 	}
 	
 	
@@ -183,6 +178,11 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 		Version thatVersion = o.getVersion();
 		if(version!=null && thatVersion!=null) return version.compareTo(thatVersion);
 		else return getVersionAsString().compareTo(o.getVersionAsString());
+	}
+	
+	@Override
+	public String toString() {
+		return "Version(\""+getName()+"@"+getVersionAsString()+"\")";
 	}
 	
 }

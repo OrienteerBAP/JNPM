@@ -47,6 +47,17 @@ public class JNPMService
 		return INSTANCE;
 	}
 	
+	/**
+	 * Method for testing purposes - to be able to substitute mocked objects
+	 * @param substitution {@link JNPMService} to substitute
+	 * @return previous {@link JNPMService}
+	 */
+	static JNPMService instance(JNPMService substitution) {
+		JNPMService preserved = INSTANCE;
+		INSTANCE = substitution;
+		return preserved;
+	}
+	
 	public static synchronized JNPMService configure(JNPMSettings settings) {
 		if(INSTANCE!=null) throw new IllegalStateException("You can't configure JNPM twise: it's already initiated");
 		try {

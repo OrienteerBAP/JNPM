@@ -113,36 +113,35 @@ public interface RxJNPMService {
 	public default Observable<TraversalTree> traverse(TraversalContext ctx, TraversalTree parentTree, VersionInfo version, boolean doForThis, ITraversalRule rule) {
 		return Observable.defer(() -> {
 			Logger log = ctx.getLogger();
-			log.info("Package: "+version.getName()+"@"+version.getVersionAsString());
+//			log.info("Package: "+version.getName()+"@"+version.getVersionAsString());
 			
-			final TraversalTree thisTree = parentTree!=null?new TraversalTree(ctx, parentTree, version):ctx.getRootTree(); 
+			final TraversalTree thisTree = parentTree!=null?parentTree.subTreeFor(version):ctx.getRootTree(); 
 			List<Observable<TraversalTree>>  setToDo = new ArrayList<>();
-			if(doForThis) setToDo.add(Observable.just(thisTree).doOnNext(TraversalTree::commitAsChild));
+			if(doForThis) setToDo.add(Observable.just(thisTree).doOnNext(TraversalTree::commit));
 			
-			Map<String, String> toDownload = rule.getNextDependencies(version);
-			
-			if(!toDownload.isEmpty()) {
-				//Need to download first and then go deeper
-				Observable<VersionInfo> cachedDependencies = Observable.fromIterable(toDownload.entrySet())
-											.flatMapMaybe(e-> JNPMService.instance().getRxService()
-																.bestMatch(e.getKey(), e.getValue()))
-											.doOnError(e -> log.error("Error during handing "+version.getName()+"@"+version.getVersionAsString()+" ToDownload: "+toDownload, e))
-											.filter(v -> !ctx.alreadyTraversed(v))
-											.doOnNext(v -> ctx.markTraversed(v))
-											.cache();
-				switch (ctx.getDirection()) {
-					case WIDER:
-						// Go wider first
-						setToDo.add(cachedDependencies
-								.map(v ->  new TraversalTree(ctx, thisTree, v))
-								.doOnNext(TraversalTree::commitAsChild));
-						// Go to dependencies
-						setToDo.add(cachedDependencies.flatMap(v -> traverse(ctx, thisTree, v, false, ITraversalRule.DEPENDENCIES)));
-						break;
-					case DEEPER:
-						// Go to dependencies right away
-						setToDo.add(cachedDependencies.flatMap(v -> traverse(ctx, thisTree, v, true, ITraversalRule.DEPENDENCIES)));
-						break;
+			if(!thisTree.isDuplicate()) {
+				Map<String, String> toDownload = rule.getNextDependencies(version);
+				
+				if(!toDownload.isEmpty()) {
+					Observable<VersionInfo> cachedDependencies = Observable.fromIterable(toDownload.entrySet())
+												.flatMapMaybe(e-> JNPMService.instance().getRxService()
+																	.bestMatch(e.getKey(), e.getValue()))
+												.doOnError(e -> log.error("Error during handing "+version.getName()+"@"+version.getVersionAsString()+" ToDownload: "+toDownload, e))
+												.cache();
+					switch (ctx.getDirection()) {
+						case WIDER:
+							// Go wider first
+							setToDo.add(cachedDependencies
+									.map(v ->  thisTree.subTreeFor(v).commit()));
+							// Go to dependencies
+							setToDo.add(cachedDependencies.flatMap(v -> traverse(ctx, thisTree, v, false, ITraversalRule.DEPENDENCIES)));
+							
+							break;
+						case DEEPER:
+							// Go to dependencies right away
+							setToDo.add(cachedDependencies.flatMap(v -> traverse(ctx, thisTree, v, true, ITraversalRule.DEPENDENCIES)));
+							break;
+					}
 				}
 			}
 			return Observable.concat(setToDo);

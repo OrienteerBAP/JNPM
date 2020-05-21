@@ -12,10 +12,12 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @JsonIgnoreProperties
+@ToString(onlyExplicitlyIncluded = true, callSuper = false)
 public abstract class AbstractArtifactInfo extends AbstractInfo{
 	
 		@JsonProperty("_id")

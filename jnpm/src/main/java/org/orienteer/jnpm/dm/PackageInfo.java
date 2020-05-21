@@ -33,4 +33,9 @@ public class PackageInfo extends AbstractArtifactInfo {
 	public String getLatest() {
 		return getDistTags().get("latest");
 	}
+	
+	@Override
+	public String toString() {
+		return "Package(\""+getName()+"\")";
+	}
 }
