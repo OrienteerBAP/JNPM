@@ -24,28 +24,13 @@ import lombok.AccessLevel;
 public class TraversalContext {
 	private TraversalTree rootTree;
 	private TraverseDirection direction;
-	private ITraversalVisitor visitor;
-	private Function<VersionInfo, Completable> visitCompletableFunction;
 	
 	@Getter(AccessLevel.NONE)
 	private Map<VersionInfo, TraversalTree> traversed = Collections.synchronizedMap(new HashMap<VersionInfo, TraversalTree>());
 	
-	public TraversalContext(VersionInfo rootVersion, TraverseDirection direction, ITraversalVisitor visitor) {
+	public TraversalContext(VersionInfo rootVersion, TraverseDirection direction) {
 		this.rootTree = new TraversalTree(this, null, rootVersion);
 		this.direction = direction;
-		this.visitor = visitor;
-		this.visitCompletableFunction =visitor!=null?visitor::visitCompletable:null;
-	}
-	
-	public TraversalContext(VersionInfo rootVersion, TraverseDirection direction, Function<VersionInfo, Completable> visitCompletableFunction) {
-		this.rootTree = new TraversalTree(this, null, rootVersion);
-		this.direction = direction;
-		this.visitCompletableFunction = visitCompletableFunction;
-		this.visitor = visitCompletableFunction!=null?ITraversalVisitor.wrap(visitCompletableFunction):null;
-	}
-	
-	public Completable visitCompletable(VersionInfo version) throws Exception {
-		return visitCompletableFunction.apply(version);
 	}
 	
 	public boolean alreadyTraversed(VersionInfo version, TraversalTree thisTree) {

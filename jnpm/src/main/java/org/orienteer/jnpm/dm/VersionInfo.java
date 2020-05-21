@@ -17,25 +17,15 @@ import java.util.function.Predicate;
 import org.apache.commons.compress.utils.IOUtils;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.traversal.ITraversalRule;
-import org.orienteer.jnpm.traversal.ITraversalVisitor;
-import org.orienteer.jnpm.traversal.TraversalContext;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
 
-import io.reactivex.BackpressureStrategy;
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
-import io.reactivex.Single;
-import io.reactivex.functions.Function;
-import io.reactivex.parallel.ParallelFlowable;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Data;
 import lombok.ToString;

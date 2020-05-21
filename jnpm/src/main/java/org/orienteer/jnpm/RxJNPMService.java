@@ -1,7 +1,6 @@
 package org.orienteer.jnpm;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -11,7 +10,6 @@ import org.orienteer.jnpm.dm.RegistryInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
 import org.orienteer.jnpm.traversal.ITraversalRule;
-import org.orienteer.jnpm.traversal.ITraversalVisitor;
 import org.orienteer.jnpm.traversal.TraversalContext;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
@@ -19,14 +17,9 @@ import org.slf4j.Logger;
 
 import com.github.zafarkhaja.semver.Version;
 
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.functions.Function;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.ResponseBody;
 import retrofit2.Response;
 import retrofit2.http.GET;
@@ -106,7 +99,7 @@ public interface RxJNPMService {
    
 	
 	public default Observable<TraversalTree> traverse(VersionInfo rootVersion, TraverseDirection direction, boolean doForThis, ITraversalRule rule) {
-		TraversalContext ctx = new TraversalContext(rootVersion, direction, (ITraversalVisitor) null);
+		TraversalContext ctx = new TraversalContext(rootVersion, direction);
 		return traverse(ctx, null, rootVersion, doForThis, rule);
 	}
     
