@@ -6,6 +6,7 @@ import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
 import com.github.zafarkhaja.semver.expr.ExpressionParser;
 import com.github.zafarkhaja.semver.expr.MavenParser;
+import com.github.zafarkhaja.semver.util.UnexpectedElementException;
 
 public final class JNPMUtils {
 	
@@ -18,10 +19,10 @@ public final class JNPMUtils {
 		Predicate<Version> res=null;
         try {
             res = ExpressionParser.newInstance().parse(versionConstraint);
-        } catch (ParseException e) {
+        } catch (ParseException | UnexpectedElementException e) {
             try {
                 res = new MavenParser().parse(versionConstraint);
-            } catch (ParseException e2) {
+            } catch (ParseException | UnexpectedElementException e2) {
                 //NOP
             }
         }

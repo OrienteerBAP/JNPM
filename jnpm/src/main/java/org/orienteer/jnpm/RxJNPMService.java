@@ -85,7 +85,7 @@ public interface RxJNPMService {
     	if(indx>0) {
     		return retrieveVersions(expression.substring(0, indx), expression.substring(indx+1));
     	} else {
-    		return retrieveVersions(expression, null);
+    		return retrieveVersions(expression, "latest");
     	}
     }
 	

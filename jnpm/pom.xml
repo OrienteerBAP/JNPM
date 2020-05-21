@@ -9,7 +9,6 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-  <groupId>org.orienteer.jnpm</groupId>
   <artifactId>jnpm</artifactId>
 
   <name>jnpm</name>
@@ -42,6 +41,10 @@
     <dependency> 
 	  <groupId>org.slf4j</groupId>
 	  <artifactId>slf4j-log4j12</artifactId>
+	</dependency>
+	<dependency>
+	    <groupId>info.picocli</groupId>
+	    <artifactId>picocli</artifactId>
 	</dependency>
     <dependency>
 		<groupId>org.projectlombok</groupId>
