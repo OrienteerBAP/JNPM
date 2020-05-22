@@ -1,8 +1,7 @@
-package org.orienteer.jnpm.commands;
+package org.orienteer.jnpm.cli;
 
 import java.util.concurrent.Callable;
 
-import org.orienteer.jnpm.JNPM;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.RxJNPMService;
 import org.orienteer.jnpm.dm.VersionInfo;

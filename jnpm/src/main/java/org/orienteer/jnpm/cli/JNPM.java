@@ -1,10 +1,12 @@
-package org.orienteer.jnpm;
+package org.orienteer.jnpm.cli;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.Callable;
 
-import org.orienteer.jnpm.commands.DownloadCommand;
+import org.orienteer.jnpm.JNPMService;
+import org.orienteer.jnpm.JNPMSettings;
+import org.orienteer.jnpm.JNPMSettings.JNPMSettingsBuilder;
 
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
