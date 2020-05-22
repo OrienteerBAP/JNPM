@@ -22,14 +22,24 @@ import picocli.CommandLine.ParentCommand;
 @Slf4j
 public class DownloadCommand implements Callable<Integer>{
 	
-	@Option(names = "--save-exact", description = "Get only specified package")
-	private boolean saveExact = false;
+	@Option(names = "--download",negatable = true, description = "Download by default. Negate if  just attempt to lookup is needed")
+	private boolean download = false;
 	
-	@Option(names = "--no-save", description = "Don't download. Just traverse dependencies")
-	private boolean noSave = false;
+	@Option(names = {"--prod"}, negatable = true, description = "Download dependencies (default)")
+	private boolean getProd = true;
+    @Option(names = {"--dev"}, negatable = true, description = "Download dev dependencies")
+    private boolean getDev = false;
+    @Option(names = {"--optional"},negatable = true,  description = "Download optional dependencies")
+    private boolean getOptional = false;
+    @Option(names = {"--peer"},negatable = true,  description = "Download peer dependencies")
+    private boolean getPeer = false;
+    
+    @Option(names = {"-h", "--help"}, usageHelp = true)
+    private boolean usageHelp;
 	
 	@Parameters(index = "0", description = "Package to be retrieved", arity = "1")
     private String packageStatement;
+	
 	
 	@ParentCommand
     private JNPM parent;
@@ -44,13 +54,13 @@ public class DownloadCommand implements Callable<Integer>{
 		} else {
 			System.out.printf("Package '%s@%s' was found for query '%s' \n", version.getName(), version.getVersionAsString(), packageStatement);
 			RxJNPMService rxService = JNPMService.instance().getRxService();
-			ITraversalRule rule = saveExact?ITraversalRule.NO_DEPENDENCIES:ITraversalRule.DEPENDENCIES;
+			ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
 			Observable<TraversalTree> observable = rxService.traverse(version, TraverseDirection.WIDER, true, rule)
 					.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
-			if(noSave) {
-				observable.ignoreElements().blockingAwait();
-			} else {
+			if(download) {
 				observable.flatMapCompletable(t -> t.getVersion().downloadTarball()).blockingAwait();
+			} else {
+				observable.ignoreElements().blockingAwait();
 			}
 			return 0;
 		}
