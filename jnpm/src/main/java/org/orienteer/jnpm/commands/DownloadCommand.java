@@ -2,6 +2,7 @@ package org.orienteer.jnpm.commands;
 
 import java.util.concurrent.Callable;
 
+import org.orienteer.jnpm.JNPM;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.RxJNPMService;
 import org.orienteer.jnpm.dm.VersionInfo;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParentCommand;
 
 @Command(name="download", aliases = "d", description = "Download packages into local cache")
 @Slf4j
@@ -28,9 +30,13 @@ public class DownloadCommand implements Callable<Integer>{
 	
 	@Parameters(index = "0", description = "Package to be retrieved", arity = "1")
     private String packageStatement;
+	
+	@ParentCommand
+    private JNPM parent;
 
 	@Override
 	public Integer call() throws Exception {
+		parent.configure();
 		VersionInfo version = JNPMService.instance().bestMatch(packageStatement);
 		if(version==null) {
 			System.out.printf("Package '%s' was not found\n", packageStatement);
