@@ -9,14 +9,23 @@ import static org.orienteer.jnpm.traversal.ITraversalRule.DEPENDENCIES;
 import static org.orienteer.jnpm.traversal.ITraversalRule.DEV_DEPENDENCIES;
 import static org.orienteer.jnpm.traversal.ITraversalRule.combine;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.compress.utils.IOUtils;
 import org.junit.Test;
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
@@ -39,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JNPMTest 
 {
+	
+	private static final Random RANDOM = new Random(); 
 	static {
 		JNPMService.configure(JNPMSettings.builder()
 						.homeDirectory(Paths.get("target", ".jnpm"))
@@ -203,5 +214,36 @@ public class JNPMTest
     	
     	searchResults = JNPMService.instance().getRxService().search("vue", null, null);
     	assertNotNull(searchResults);
+    }
+    
+    @Test
+    public void tarballAccessTest() throws IOException {
+		File file = new File("src/test/resources/test.tar.gz");
+		assertEquals("a", readTarball(file, "test/a.txt"));
+		assertEquals("b", readTarball(file, "test/a/b.txt"));
+		assertEquals("c", readTarball(file, "test/a/b/c.txt"));
+    }
+    
+    private String readTarball(File file, String path) throws IOException {
+    	try(ByteArrayOutputStream baos = new ByteArrayOutputStream();) {
+			JNPMUtils.readTarball(file, path, baos);
+			return new String(baos.toByteArray());
+		}
+    }
+    
+    @Test
+    public void tarballExtract() throws IOException {
+    	File tarball = new File("src/test/resources/test.tar.gz");
+		Path destinationDir = Paths.get("target/extractTo"+RANDOM.nextInt(999999));
+		JNPMUtils.extractTarball(tarball, destinationDir, JNPMUtils.stringReplacer("^test/", ""));
+		assertEquals("a", readFile(destinationDir.resolve("a.txt")));
+		assertEquals("b", readFile(destinationDir.resolve("a/b.txt")));
+		assertEquals("c", readFile(destinationDir.resolve("a/b/c.txt")));
+    }
+    
+    private String readFile(Path path) throws IOException {
+    	try(InputStream fis = Files.newInputStream(path);) {
+			return new String(IOUtils.toByteArray(fis));
+		}
     }
 }
