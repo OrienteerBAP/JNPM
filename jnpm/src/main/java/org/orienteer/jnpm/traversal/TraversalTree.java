@@ -1,14 +1,20 @@
 package org.orienteer.jnpm.traversal;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
+import org.orienteer.jnpm.IInstallationStrategy;
+import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
+import io.reactivex.Completable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,6 +42,14 @@ public class TraversalTree {
 		this.parent = parent;
 		this.version = version;
 		this.level = parent!=null?parent.level+1:0;
+	}
+	
+	public Completable install(final Path targetFolder, final IInstallationStrategy strategy) {
+		return Completable.concatArray(getVersion().downloadTarball(),
+								Completable.fromAction(()-> {
+									File tarball = getVersion().getLocalTarball();
+									JNPMUtils.extractTarball(tarball, strategy.mapPath(targetFolder, TraversalTree.this), strategy.entreeNameMapper());
+								}));
 	}
 	
 	public TraversalTree commit() {

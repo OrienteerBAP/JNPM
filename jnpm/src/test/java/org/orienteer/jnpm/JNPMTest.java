@@ -185,7 +185,8 @@ public class JNPMTest
     
     @Test
     public void traversal() throws IOException {
-    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
+//    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
+    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("a", "2.1.2");
     	assertNotNull(versionInfo);
     	
     	Observable<TraversalTree> traversal = JNPMService.instance().getRxService()
@@ -232,10 +233,10 @@ public class JNPMTest
     }
     
     @Test
-    public void tarballExtract() throws IOException {
+    public void tarballExtractTest() throws IOException {
     	File tarball = new File("src/test/resources/test.tar.gz");
 		Path destinationDir = Paths.get("target/extractTo"+RANDOM.nextInt(999999));
-		JNPMUtils.extractTarball(tarball, destinationDir, JNPMUtils.stringReplacer("^test/", ""));
+		JNPMUtils.extractTarball(tarball, destinationDir, ".*", JNPMUtils.stringReplacer("^test/", ""));
 		assertEquals("a", readFile(destinationDir.resolve("a.txt")));
 		assertEquals("b", readFile(destinationDir.resolve("a/b.txt")));
 		assertEquals("c", readFile(destinationDir.resolve("a/b/c.txt")));
@@ -245,5 +246,15 @@ public class JNPMTest
     	try(InputStream fis = Files.newInputStream(path);) {
 			return new String(IOUtils.toByteArray(fis));
 		}
+    }
+    
+    @Test
+    public void flatInstallTest() throws IOException {
+    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
+    	TraversalTree tree = new TraversalTree(null, null, versionInfo);
+    	Path destinationDir = Paths.get("target/flatInstall"+RANDOM.nextInt(999999));
+    	tree.install(destinationDir, IInstallationStrategy.FLAT_EXTRACT).blockingAwait();
+    	String packageContent = readFile(destinationDir.resolve("vue-2.6.11/package.json"));
+    	assertTrue(packageContent.contains("\"version\": \"2.6.11\""));
     }
 }

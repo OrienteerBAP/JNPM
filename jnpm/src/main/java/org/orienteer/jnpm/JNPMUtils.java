@@ -47,7 +47,18 @@ public final class JNPMUtils {
 		public String apply(String t) {
 			return pattern.matcher(t).replaceAll(replacement);
 		}
+	}
+	
+	private static class NameMatcher implements Predicate<ArchiveEntry> {
+		private Pattern pattern;
+		public NameMatcher(String regex) {
+			this.pattern = pattern.compile(regex);
+		}
 		
+		@Override
+		public boolean test(ArchiveEntry t) {
+			return pattern.matcher(t.getName()).matches();
+		}
 	}
 	
 	private JNPMUtils() {
@@ -58,7 +69,12 @@ public final class JNPMUtils {
 		return new StringReplacer(regexp, replacement);
 	}
 	
-	public static Predicate<Version> toPredicate(String versionConstraint) {
+	private static NameMatcher newNameMatcher(String regexp) {
+		if(regexp==null || regexp.trim().length()==0) return null;
+		return new NameMatcher(regexp);
+	}
+	
+	public static Predicate<Version> toVersionPredicate(String versionConstraint) {
 		if(versionConstraint==null) return v->true;
 		Predicate<Version> res=null;
         try {
@@ -94,6 +110,14 @@ public final class JNPMUtils {
 	}
 	
 	public static void extractTarball(File tarball, Path destinationDir, Function<String, String> pathConverter) throws IOException {
+		extractTarball(tarball, destinationDir, (Predicate<ArchiveEntry>) null, pathConverter); 
+	}
+	
+	public static void extractTarball(File tarball, Path destinationDir, String filePattern, Function<String, String> pathConverter) throws IOException {
+		extractTarball(tarball, destinationDir, newNameMatcher(filePattern), pathConverter); 
+	}
+	
+	public static void extractTarball(File tarball, Path destinationDir, Predicate<ArchiveEntry> matcher, Function<String, String> pathConverter) throws IOException {
 		if(tarball==null || !tarball.exists()) 
 			throw new FileNotFoundException("Tarball was not found: "+tarball);
 		try (InputStream fi = new FileInputStream(tarball);
@@ -103,6 +127,7 @@ public final class JNPMUtils {
 			
 				ArchiveEntry entry;
 				while((entry = a.getNextEntry()) !=null) {
+					if(matcher!=null && !matcher.test(entry)) continue;
 					String entryName = entry.getName();
 					log.info("Scanning: "+entryName);
 					String newName = pathConverter!=null?pathConverter.apply(entryName):entryName;
@@ -112,6 +137,7 @@ public final class JNPMUtils {
 					if(entry.isDirectory()) {
 						Files.createDirectories(newPath);
 					} else {
+						Files.createDirectories(newPath.getParent());
 						try (OutputStream o = Files.newOutputStream(newPath)) {
 			                IOUtils.copy(a, o);
 			            }

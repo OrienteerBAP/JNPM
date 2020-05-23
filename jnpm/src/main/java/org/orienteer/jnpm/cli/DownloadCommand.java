@@ -22,7 +22,7 @@ import picocli.CommandLine.ParentCommand;
 public class DownloadCommand implements Callable<Integer>{
 	
 	@Option(names = "--download",negatable = true, description = "Download by default. Negate if  just attempt to lookup is needed")
-	private boolean download = false;
+	private boolean download = true;
 	
 	@Option(names = {"--prod"}, negatable = true, description = "Download dependencies (default)")
 	private boolean getProd = true;

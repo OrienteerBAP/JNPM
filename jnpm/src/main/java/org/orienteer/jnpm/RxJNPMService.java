@@ -65,7 +65,7 @@ public interface RxJNPMService {
 	}
 	
 	public default Observable<VersionInfo> retrieveVersions(String packageName, String versionConstraint) {
-    	final Predicate<Version> res=JNPMUtils.toPredicate(versionConstraint);
+    	final Predicate<Version> res=JNPMUtils.toVersionPredicate(versionConstraint);
         if(res!=null) {
         	return getPackageInfo(packageName)
     						.flatMapObservable(p -> Observable.fromIterable(p.getVersions().values()))
