@@ -37,7 +37,7 @@ public class TraversalTree {
 	@NonFinal
 	private boolean duplicate = false;
 	
-	public TraversalTree(TraversalContext context, TraversalTree depender, VersionInfo version) {
+	TraversalTree(TraversalContext context, TraversalTree depender, VersionInfo version) {
 		this.context = context;
 		this.depender = depender;
 		this.version = version;

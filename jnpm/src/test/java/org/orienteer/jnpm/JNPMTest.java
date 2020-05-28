@@ -251,7 +251,8 @@ public class JNPMTest
     @Test
     public void flatInstallTest() throws IOException {
     	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
-    	TraversalTree tree = new TraversalTree(null, null, versionInfo);
+    	TraversalContext ctx = new TraversalContext(TraverseDirection.WIDER, versionInfo);
+    	TraversalTree tree = ctx.getRootTree();
     	Path destinationDir = Paths.get("target/flatInstall"+RANDOM.nextInt(999999));
     	tree.install(destinationDir, IInstallationStrategy.FLAT_EXTRACT).blockingAwait();
     	String packageContent = readFile(destinationDir.resolve("vue-2.6.11/package.json"));

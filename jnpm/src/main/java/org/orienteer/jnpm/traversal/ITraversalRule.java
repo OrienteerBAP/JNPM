@@ -18,6 +18,10 @@ public interface ITraversalRule {
 	
 	public Map<String, String> getNextDependencies(VersionInfo version);
 	
+	public default Map<String, String> getNextDependencies(TraversalTree tree) {
+		return getNextDependencies(tree.getVersion());
+	}
+	
 	public static ITraversalRule getRuleFor(boolean dep, boolean devDep, boolean optDep, boolean peerDep) {
 		List<ITraversalRule> rules = new ArrayList<>();
 		if(dep) rules.add(DEPENDENCIES);
