@@ -173,11 +173,11 @@ public class JNPMTest
 			assertNotNull(trace);
 			assertEquals(3, trace.size());
 			assertEquals(a, trace.get(0).getVersion());
-			assertEquals(0, trace.get(0).getLevel());
+			assertEquals(0, trace.get(0).getDependencyLevel());
 			assertEquals(b, trace.get(1).getVersion());
-			assertEquals(1, trace.get(1).getLevel());
+			assertEquals(1, trace.get(1).getDependencyLevel());
 			assertEquals(a, trace.get(2).getVersion());
-			assertEquals(2, trace.get(2).getLevel());
+			assertEquals(2, trace.get(2).getDependencyLevel());
 		} finally {
 			JNPMService.instance(original);
 		}

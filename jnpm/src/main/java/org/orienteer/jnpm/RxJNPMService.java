@@ -99,16 +99,16 @@ public interface RxJNPMService {
    
 	
 	public default Observable<TraversalTree> traverse(VersionInfo rootVersion, TraverseDirection direction, boolean doForThis, ITraversalRule rule) {
-		TraversalContext ctx = new TraversalContext(rootVersion, direction);
+		TraversalContext ctx = new TraversalContext(direction, rootVersion);
 		return traverse(ctx, null, rootVersion, doForThis, rule);
 	}
     
-	public default Observable<TraversalTree> traverse(TraversalContext ctx, TraversalTree parentTree, VersionInfo version, boolean doForThis, ITraversalRule rule) {
+	public default Observable<TraversalTree> traverse(TraversalContext ctx, TraversalTree dependerTree, VersionInfo version, boolean doForThis, ITraversalRule rule) {
 		return Observable.defer(() -> {
 			Logger log = ctx.getLogger();
 //			log.info("Package: "+version.getName()+"@"+version.getVersionAsString());
 			
-			final TraversalTree thisTree = parentTree!=null?parentTree.subTreeFor(version):ctx.getRootTree(); 
+			final TraversalTree thisTree = dependerTree!=null?dependerTree.subTreeFor(version):ctx.getRootTree(); 
 			List<Observable<TraversalTree>>  setToDo = new ArrayList<>();
 			if(doForThis) setToDo.add(Observable.just(thisTree).doOnNext(TraversalTree::commit));
 			

@@ -23,25 +23,25 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 
 @Value
-@ToString(of = {"level", "version", "duplicate"})
-@EqualsAndHashCode(of={"parent", "version"})
+@ToString(of = {"dependencyLevel", "version", "duplicate"})
+@EqualsAndHashCode(of={"depender", "version"})
 public class TraversalTree {
 	
 	private TraversalContext context;
-	private TraversalTree parent;	
+	private TraversalTree depender;	
 	@Getter(AccessLevel.NONE)
-	private Map<VersionInfo, TraversalTree> modifiableChildren = Collections.synchronizedMap(new HashMap<VersionInfo, TraversalTree>());
-	private Collection<TraversalTree> children = Collections.unmodifiableCollection(modifiableChildren.values());
+	private Map<VersionInfo, TraversalTree> modifiableDependencies = Collections.synchronizedMap(new HashMap<VersionInfo, TraversalTree>());
+	private Collection<TraversalTree> dependencies = Collections.unmodifiableCollection(modifiableDependencies.values());
 	private VersionInfo version;
-	private int level;
+	private int dependencyLevel;
 	@NonFinal
 	private boolean duplicate = false;
 	
-	public TraversalTree(TraversalContext context, TraversalTree parent, VersionInfo version) {
+	public TraversalTree(TraversalContext context, TraversalTree depender, VersionInfo version) {
 		this.context = context;
-		this.parent = parent;
+		this.depender = depender;
 		this.version = version;
-		this.level = parent!=null?parent.level+1:0;
+		this.dependencyLevel = depender!=null?depender.dependencyLevel+1:0;
 	}
 	
 	public Completable install(final Path targetFolder, final IInstallationStrategy strategy) {
@@ -53,8 +53,8 @@ public class TraversalTree {
 	}
 	
 	public TraversalTree commit() {
-		if(parent!=null) {
-			parent.modifiableChildren.put(version, this);
+		if(depender!=null) {
+			depender.modifiableDependencies.put(version, this);
 		}
 		context.markTraversed(version, this);
 		if(context.alreadyTraversed(version, this)) markAsDuplicate();
@@ -66,7 +66,7 @@ public class TraversalTree {
 	}
 	
 	public TraversalTree subTreeFor(VersionInfo version) {
-		TraversalTree ret = modifiableChildren.get(version);
+		TraversalTree ret = modifiableDependencies.get(version);
 		if(ret==null) {
 			ret = new TraversalTree(context, this, version);
 		}

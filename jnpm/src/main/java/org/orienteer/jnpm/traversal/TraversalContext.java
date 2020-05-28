@@ -28,7 +28,7 @@ public class TraversalContext {
 	@Getter(AccessLevel.NONE)
 	private Map<VersionInfo, TraversalTree> traversed = Collections.synchronizedMap(new HashMap<VersionInfo, TraversalTree>());
 	
-	public TraversalContext(VersionInfo rootVersion, TraverseDirection direction) {
+	public TraversalContext(TraverseDirection direction, VersionInfo rootVersion) {
 		this.rootTree = new TraversalTree(this, null, rootVersion);
 		this.direction = direction;
 	}
