@@ -26,6 +26,7 @@ import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import lombok.Data;
 import lombok.ToString;
@@ -99,9 +100,9 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	 * Completable.concat(setToDo); }); }
 	 */
 	
-	public Completable download(boolean getThis, ITraversalRule... rules) {
+	public Completable download(ITraversalRule... rules) {
 		return JNPMService.instance().getRxService()
-				.traverse(this, TraverseDirection.WIDER, getThis, ITraversalRule.combine(rules))
+				.traverse(TraverseDirection.WIDER, ITraversalRule.combine(rules), this)
 				.flatMapCompletable(t -> t.getVersion().downloadTarball());
 	}
 	
@@ -160,6 +161,13 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	
 	public boolean satisfies(Predicate<Version> predicate) {
 		return version!=null && predicate.test(version);
+	}
+	
+	public Observable<VersionInfo> getDependencies(ITraversalRule rule) {
+		Map<String, String> toDownload = rule.getNextDependencies(this);
+		return Observable.fromIterable(toDownload.entrySet())
+			.flatMapMaybe(e-> JNPMService.instance().getRxService()
+							.bestMatch(e.getKey(), e.getValue()));
 	}
 
 	@Override

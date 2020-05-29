@@ -8,13 +8,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.orienteer.jnpm.IInstallationStrategy;
+import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,9 +26,8 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 
 @Value
-@ToString(of = {"dependencyLevel", "version", "duplicate"})
 @EqualsAndHashCode(of={"depender", "version"})
-public class TraversalTree {
+public class TraversalTree extends AbstractTraversalNode {
 	
 	private TraversalContext context;
 	private TraversalTree depender;	
@@ -38,6 +40,7 @@ public class TraversalTree {
 	private boolean duplicate = false;
 	
 	TraversalTree(TraversalContext context, TraversalTree depender, VersionInfo version) {
+		super(depender);
 		this.context = context;
 		this.depender = depender;
 		this.version = version;
@@ -58,6 +61,14 @@ public class TraversalTree {
 		}
 		context.markTraversed(version, this);
 		if(context.alreadyTraversed(version, this)) markAsDuplicate();
+		
+		if(parent!=null) {
+			//TODO: Adjust parent per dependencies
+			AbstractTraversalNode betterParent = findProperParent(version);
+			if(betterParent!=null) parent = betterParent;
+			level = parent.getLevel()+1;
+			parent.modifiableChildren.put(version, this);
+		}
 		return this;
 	}
 	
@@ -71,6 +82,21 @@ public class TraversalTree {
 			ret = new TraversalTree(context, this, version);
 		}
 		return ret;
+	}
+	
+	@Override
+	public Observable<TraversalTree> getNextTraversalNodes(ITraversalRule rule) {
+		return getVersion().getDependencies(rule).map(v -> subTreeFor(v));
+	}
+	
+	@Override
+	public boolean isTraversableDeeper() {
+		return !isDuplicate();
+	}
+	
+	@Override
+	public String toString() {
+		return "TraversalTree(\""+version.getName()+"@"+version.getVersionAsString()+"\", level="+getLevel()+", dependencyLevel="+dependencyLevel+")";
 	}
 
 }

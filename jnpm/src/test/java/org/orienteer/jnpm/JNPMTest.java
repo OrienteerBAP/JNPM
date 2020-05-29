@@ -122,7 +122,7 @@ public class JNPMTest
     	File localFile = versionInfo.getLocalTarball();
     	if(localFile.exists()) localFile.delete();
     	log.info("version = "+versionInfo);
-    	versionInfo.download(true, DEPENDENCIES, DEV_DEPENDENCIES).blockingAwait();
+    	versionInfo.download(DEPENDENCIES, DEV_DEPENDENCIES).blockingAwait();
     	assertTrue(localFile.exists());
     }
     
@@ -162,10 +162,8 @@ public class JNPMTest
 			assertEquals(b, JNPMService.instance().getRxService().bestMatch("b", "2.0.0").blockingGet());
 			
 			Observable<TraversalTree> traversal = JNPMService.instance().getRxService()
-					.traverse(a, 
-							  TraverseDirection.WIDER, 
-							  true, 
-							  DEPENDENCIES);
+					.traverse(TraverseDirection.WIDER,
+							  DEPENDENCIES, a); 
 			TestObserver<TraversalTree> test = traversal.doOnNext(t->log.info("Traverse"+t)).test();
 			test.await(5, TimeUnit.SECONDS);
 			test.assertComplete();
@@ -185,26 +183,24 @@ public class JNPMTest
     
     @Test
     public void traversal() throws IOException {
-//    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
-    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("a", "2.1.2");
-    	assertNotNull(versionInfo);
     	
     	Observable<TraversalTree> traversal = JNPMService.instance().getRxService()
-									    		.traverse(versionInfo, 
-									    				  TraverseDirection.WIDER, 
-									    				  true, 
-									    				  ITraversalRule.combine(DEPENDENCIES, DEV_DEPENDENCIES));
+									    		.traverse(TraverseDirection.WIDER,
+									    				  ITraversalRule.combine(DEPENDENCIES, DEV_DEPENDENCIES), 
+									    				  "a@2.1.2", "b@2.0.1", "c@1.0.0", "d@1.0.1");
     	TestObserver<TraversalContext> test = traversal.doOnNext(t -> log.info("Traverse: "+t))
 								     			.lastElement()
 								    			.map(TraversalTree::getContext)
 								    			.doOnSuccess(ctx -> log.info("Retrieved: "+ctx.getTraversed().size()))
+								    			.doOnComplete(() -> log.info("Completed"))
+								    			.doOnError(t -> log.error("Error accured", t))
 								    			.test();
     	List<TraversalContext> ctxs = test.awaitDone(20, TimeUnit.SECONDS)
 				.values();
     	assertNotNull(ctxs);
     	assertEquals(1, ctxs.size());
     	TraversalContext ctx = ctxs.get(0);
-    	
+    	assertTrue(ctx.getTraversed().size()>100);
     	test.dispose();
     }
     
@@ -252,7 +248,7 @@ public class JNPMTest
     public void flatInstallTest() throws IOException {
     	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
     	TraversalContext ctx = new TraversalContext(TraverseDirection.WIDER, versionInfo);
-    	TraversalTree tree = ctx.getRootTree();
+    	TraversalTree tree = ctx.getChildren().iterator().next();
     	Path destinationDir = Paths.get("target/flatInstall"+RANDOM.nextInt(999999));
     	tree.install(destinationDir, IInstallationStrategy.FLAT_EXTRACT).blockingAwait();
     	String packageContent = readFile(destinationDir.resolve("vue-2.6.11/package.json"));

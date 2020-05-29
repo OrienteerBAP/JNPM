@@ -54,7 +54,7 @@ public class DownloadCommand implements Callable<Integer>{
 			System.out.printf("Package '%s@%s' was found for query '%s' \n", version.getName(), version.getVersionAsString(), packageStatement);
 			RxJNPMService rxService = JNPMService.instance().getRxService();
 			ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
-			Observable<TraversalTree> observable = rxService.traverse(version, TraverseDirection.WIDER, true, rule)
+			Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, version)
 					.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
 			if(download) {
 				observable.flatMapCompletable(t -> t.getVersion().downloadTarball()).blockingAwait();

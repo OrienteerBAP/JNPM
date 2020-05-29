@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.slf4j.Logger;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,17 +22,18 @@ import lombok.AccessLevel;
 
 @Value
 @Slf4j
-@ToString(of= {"rootTree", "direction"})
-public class TraversalContext {
-	private TraversalTree rootTree;
+@ToString(of= {"children","direction"})
+public class TraversalContext extends AbstractTraversalNode {
 	private TraverseDirection direction;
 	
 	@Getter(AccessLevel.NONE)
-	private Map<VersionInfo, TraversalTree> traversed = Collections.synchronizedMap(new HashMap<VersionInfo, TraversalTree>());
+	private Map<VersionInfo, TraversalTree> traversed = new ConcurrentHashMap<VersionInfo, TraversalTree>();
 	
-	public TraversalContext(TraverseDirection direction, VersionInfo rootVersion) {
-		this.rootTree = new TraversalTree(this, null, rootVersion);
+	public TraversalContext(TraverseDirection direction, VersionInfo... roots) {
 		this.direction = direction;
+		for (VersionInfo versionInfo : roots) {
+			this.modifiableChildren.put(versionInfo, new TraversalTree(this, null, versionInfo));
+		}
 	}
 	
 	public boolean alreadyTraversed(VersionInfo version, TraversalTree thisTree) {
@@ -48,6 +51,16 @@ public class TraversalContext {
 	
 	public Logger getLogger() {
 		return log;
+	}
+	
+	@Override
+	public Observable<TraversalTree> getNextTraversalNodes(ITraversalRule rule) {
+		return Observable.fromIterable(getChildren());
+	}
+	
+	@Override
+	public TraversalContext getContext() {
+		return this;
 	}
 	
 }
