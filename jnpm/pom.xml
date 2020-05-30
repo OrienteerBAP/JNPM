@@ -11,7 +11,7 @@
 
   <artifactId>jnpm</artifactId>
 
-  <name>jnpm</name>
+  <name>JNPM Core Library</name>
 
   <dependencies>
   	<dependency>
