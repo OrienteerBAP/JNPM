@@ -22,7 +22,6 @@ import lombok.AccessLevel;
 
 @Value
 @Slf4j
-@ToString(of= {"children","direction"})
 public class TraversalContext extends AbstractTraversalNode {
 	private TraverseDirection direction;
 	
@@ -34,6 +33,7 @@ public class TraversalContext extends AbstractTraversalNode {
 		for (VersionInfo versionInfo : roots) {
 			this.modifiableChildren.put(versionInfo, new TraversalTree(this, null, versionInfo));
 		}
+		this.level=-1;
 	}
 	
 	public boolean alreadyTraversed(VersionInfo version, TraversalTree thisTree) {
@@ -61,6 +61,11 @@ public class TraversalContext extends AbstractTraversalNode {
 	@Override
 	public TraversalContext getContext() {
 		return this;
+	}
+	
+	@Override
+	public String toString() {
+		return "TraversalContext("+traversed.size()+" items)";
 	}
 	
 }

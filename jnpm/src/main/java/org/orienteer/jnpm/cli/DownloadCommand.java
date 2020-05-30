@@ -36,8 +36,8 @@ public class DownloadCommand implements Callable<Integer>{
     @Option(names = {"-h", "--help"}, usageHelp = true)
     private boolean usageHelp;
 	
-	@Parameters(index = "0", description = "Package to be retrieved", arity = "1")
-    private String packageStatement;
+	@Parameters(description = "Packages to be retrieved", arity = "1..*")
+    private String[] packageStatements;
 	
 	
 	@ParentCommand
@@ -46,23 +46,16 @@ public class DownloadCommand implements Callable<Integer>{
 	@Override
 	public Integer call() throws Exception {
 		parent.configure();
-		VersionInfo version = JNPMService.instance().bestMatch(packageStatement);
-		if(version==null) {
-			System.out.printf("Package '%s' was not found\n", packageStatement);
-			return -1;
+		RxJNPMService rxService = JNPMService.instance().getRxService();
+		ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
+		Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packageStatements)
+				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
+		if(download) {
+			observable.flatMapCompletable(t -> t.getVersion().downloadTarball()).blockingAwait();
 		} else {
-			System.out.printf("Package '%s@%s' was found for query '%s' \n", version.getName(), version.getVersionAsString(), packageStatement);
-			RxJNPMService rxService = JNPMService.instance().getRxService();
-			ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
-			Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, version)
-					.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
-			if(download) {
-				observable.flatMapCompletable(t -> t.getVersion().downloadTarball()).blockingAwait();
-			} else {
-				observable.ignoreElements().blockingAwait();
-			}
-			return 0;
+			observable.ignoreElements().blockingAwait();
 		}
+		return 0;
 	}
 
 }

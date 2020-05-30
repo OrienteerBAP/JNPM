@@ -15,6 +15,27 @@ public interface IInstallationStrategy {
 		}
 	};
 	
+	public static final IInstallationStrategy NPM_LIKE = new IInstallationStrategy() {
+		@Override
+		public Path mapPath(Path rootPath, TraversalTree tree) {
+			TraversalTree path[] = tree.getPath();
+			Path ret = rootPath;
+			for (TraversalTree traversalTree : path) {
+				ret = ret.resolve("node_modules").resolve(traversalTree.getVersion().getName());
+			}
+			return ret;
+		}
+	};
+	
+	public static final IInstallationStrategy FLAT_SIMPLE_EXTRACT = new IInstallationStrategy() {
+		@Override
+		public Path mapPath(Path rootPath, TraversalTree tree) {
+			return rootPath.resolve(tree.getVersion().getName());
+		}
+	};
+	
+	
+	
 	public Path mapPath(Path rootPath, TraversalTree tree);
 	
 	public default String versionFolder(VersionInfo version) {

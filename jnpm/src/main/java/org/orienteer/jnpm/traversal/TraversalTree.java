@@ -40,7 +40,7 @@ public class TraversalTree extends AbstractTraversalNode {
 	private boolean duplicate = false;
 	
 	TraversalTree(TraversalContext context, TraversalTree depender, VersionInfo version) {
-		super(depender);
+		super(depender!=null?depender:context);
 		this.context = context;
 		this.depender = depender;
 		this.version = version;
@@ -94,9 +94,18 @@ public class TraversalTree extends AbstractTraversalNode {
 		return !isDuplicate();
 	}
 	
+	public TraversalTree[] getPath() {
+		TraversalTree[] ret = new TraversalTree[getLevel()+1];
+		for(AbstractTraversalNode current = this; current!=null; current = current.getParent()) {
+			if(current instanceof TraversalTree)
+				ret[current.getLevel()] = (TraversalTree) current;
+		}
+		return ret;
+	}
+	
 	@Override
 	public String toString() {
-		return "TraversalTree(\""+version.getName()+"@"+version.getVersionAsString()+"\", level="+getLevel()+", dependencyLevel="+dependencyLevel+")";
+		return "TraversalTree(\""+version.getName()+"@"+version.getVersionAsString()+"\", level="+getLevel()+", dependencyLevel="+dependencyLevel+", duplicate="+duplicate+")";
 	}
 
 }

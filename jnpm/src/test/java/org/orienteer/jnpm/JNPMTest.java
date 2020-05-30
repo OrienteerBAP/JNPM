@@ -245,13 +245,21 @@ public class JNPMTest
     }
     
     @Test
-    public void flatInstallTest() throws IOException {
-    	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
-    	TraversalContext ctx = new TraversalContext(TraverseDirection.WIDER, versionInfo);
-    	TraversalTree tree = ctx.getChildren().iterator().next();
-    	Path destinationDir = Paths.get("target/flatInstall"+RANDOM.nextInt(999999));
-    	tree.install(destinationDir, IInstallationStrategy.FLAT_EXTRACT).blockingAwait();
-    	String packageContent = readFile(destinationDir.resolve("vue-2.6.11/package.json"));
-    	assertTrue(packageContent.contains("\"version\": \"2.6.11\""));
+    public void installTest() throws IOException {
+    	TraversalTree tree = JNPMService.instance().getRxService()
+				.traverse(TraverseDirection.WIDER, ITraversalRule.NO_DEPENDENCIES, "vue@2.6.11")
+				.blockingFirst();
+    	assertInstallation(tree, "target/flatInstall", IInstallationStrategy.FLAT_EXTRACT, "vue-2.6.11/package.json", "\"version\": \"2.6.11\"");
+    	assertInstallation(tree, "target/npmInstall", IInstallationStrategy.NPM_LIKE, "node_modules/vue/package.json", "\"version\": \"2.6.11\"");
+    	assertInstallation(tree, "target/simpleInstall", IInstallationStrategy.FLAT_SIMPLE_EXTRACT, "vue/package.json", "\"version\": \"2.6.11\"");
+    }
+    
+    private void assertInstallation(TraversalTree tree, String pathPrefix, IInstallationStrategy strategy, String filePath, String content) throws IOException {
+    	Path destinationDir = Paths.get(pathPrefix+RANDOM.nextInt(999999));
+    	tree.install(destinationDir, strategy).blockingAwait();
+    	Path filePathToRead = destinationDir.resolve(filePath);
+    	assertTrue("Target file not found: "+filePathToRead, filePathToRead.toFile().exists());
+    	String packageContent = readFile(filePathToRead);
+    	assertTrue("Target file doesn't contain required content: "+content,packageContent.contains(content));
     }
 }
