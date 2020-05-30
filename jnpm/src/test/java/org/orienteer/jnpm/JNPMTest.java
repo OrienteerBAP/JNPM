@@ -249,9 +249,9 @@ public class JNPMTest
     	TraversalTree tree = JNPMService.instance().getRxService()
 				.traverse(TraverseDirection.WIDER, ITraversalRule.NO_DEPENDENCIES, "vue@2.6.11")
 				.blockingFirst();
-    	assertInstallation(tree, "target/flatInstall", IInstallationStrategy.FLAT_EXTRACT, "vue-2.6.11/package.json", "\"version\": \"2.6.11\"");
-    	assertInstallation(tree, "target/npmInstall", IInstallationStrategy.NPM_LIKE, "node_modules/vue/package.json", "\"version\": \"2.6.11\"");
-    	assertInstallation(tree, "target/simpleInstall", IInstallationStrategy.FLAT_SIMPLE_EXTRACT, "vue/package.json", "\"version\": \"2.6.11\"");
+    	assertInstallation(tree, "target/flatInstall", InstallationStrategy.FLAT, "vue-2.6.11/package.json", "\"version\": \"2.6.11\"");
+    	assertInstallation(tree, "target/npmInstall", InstallationStrategy.NPM, "node_modules/vue/package.json", "\"version\": \"2.6.11\"");
+    	assertInstallation(tree, "target/simpleInstall", InstallationStrategy.SIMPLE, "vue/package.json", "\"version\": \"2.6.11\"");
     }
     
     private void assertInstallation(TraversalTree tree, String pathPrefix, IInstallationStrategy strategy, String filePath, String content) throws IOException {

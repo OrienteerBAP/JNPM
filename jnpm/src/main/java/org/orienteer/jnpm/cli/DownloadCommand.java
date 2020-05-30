@@ -10,6 +10,7 @@ import org.orienteer.jnpm.traversal.TraversalRule;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
@@ -20,6 +21,8 @@ import picocli.CommandLine.ParentCommand;
 @Command(name="download", aliases = "d", description = "Download packages into local cache")
 @Slf4j
 public class DownloadCommand implements Callable<Integer>{
+	
+	protected String handledFormat = "Downloading %s@%s\n";
 	
 	@Option(names = "--download",negatable = true, description = "Download by default. Negate if  just attempt to lookup is needed")
 	private boolean download = true;
@@ -41,7 +44,7 @@ public class DownloadCommand implements Callable<Integer>{
 	
 	
 	@ParentCommand
-    private JNPM parent;
+    protected JNPM parent;
 
 	@Override
 	public Integer call() throws Exception {
@@ -51,11 +54,15 @@ public class DownloadCommand implements Callable<Integer>{
 		Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packageStatements)
 				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
 		if(download) {
-			observable.flatMapCompletable(t -> t.getVersion().downloadTarball()).blockingAwait();
+			observable.flatMapCompletable(this::doAction).blockingAwait();
 		} else {
 			observable.ignoreElements().blockingAwait();
 		}
 		return 0;
+	}
+	
+	protected Completable doAction(TraversalTree tree) {
+		return tree.getVersion().downloadTarball();
 	}
 
 }

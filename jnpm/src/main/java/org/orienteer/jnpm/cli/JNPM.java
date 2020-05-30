@@ -15,7 +15,7 @@ import picocli.CommandLine.Option;
 
 @Command(name = "jnpm", mixinStandardHelpOptions = true, 
 description = "Java implementation of Node Package Manager",
-subcommands = DownloadCommand.class)
+subcommands = {DownloadCommand.class, ExtractCommand.class})
 @Slf4j
 public class JNPM implements Callable<Integer> {
 	
@@ -26,6 +26,9 @@ public class JNPM implements Callable<Integer> {
 	
 	@Option(names = "--download-dir", description = "Cache directory for JNPM to download packages to (default: <home-dir>/cache/)")
 	private Path downloadDirectory;
+	
+	@Option(names = "--install-dir", description = "Global install directory for JNPM (default: <home-dir>/node_modules/)")
+	private Path installDirectory;
 	
 	public static void main(String... args) {
 		CommandLine top = new CommandLine(new JNPM());

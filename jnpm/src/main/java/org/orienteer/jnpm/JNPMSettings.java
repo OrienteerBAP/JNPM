@@ -16,13 +16,19 @@ public class JNPMSettings {
 	@Builder.Default private Path homeDirectory = Paths.get(System.getProperty("user.home"), ".jnpm");
 	@Builder.Default private boolean validateSignature = true;
 	private Path downloadDirectory;
+	private Path installDirectory;
 	
 	public Path getDownloadDirectory() {
 		return downloadDirectory!=null?downloadDirectory:getHomeDirectory().resolve("cache");
 	}
 	
+	public Path getInstallDirectory() {
+		return installDirectory!=null?installDirectory:getHomeDirectory();
+	}
+	
 	public void createAllDirectories() throws IOException {
 		Files.createDirectories(getHomeDirectory());
 		Files.createDirectories(getDownloadDirectory());
+		Files.createDirectories(getInstallDirectory());
 	}
 }
