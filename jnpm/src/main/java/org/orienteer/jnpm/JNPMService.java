@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import org.orienteer.jnpm.dm.PackageInfo;
@@ -17,6 +18,9 @@ import com.github.zafarkhaja.semver.Version;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.ConnectionPool;
+import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -31,11 +35,22 @@ public class JNPMService
 	
 	private JNPMService(JNPMSettings settings) {
 		this.settings = settings;
+		OkHttpClient client = new OkHttpClient.Builder()
+	            .connectTimeout(30, TimeUnit.SECONDS)
+	            .readTimeout(2,TimeUnit.MINUTES)
+	            .writeTimeout(2,  TimeUnit.MINUTES)
+//	            .cache(cache)
+	            .connectionPool(new ConnectionPool(5, 5, TimeUnit.MINUTES))
+	            .protocols(Arrays.asList(Protocol.HTTP_1_1))
+	            .build();
+		
+	    
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 		mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
 		Retrofit retrofit = new Retrofit.Builder()
 			    .baseUrl(settings.getRegistryUrl())
+			    .client(client)
 			    .addConverterFactory(JacksonConverterFactory.create(mapper))
 			    .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
 			    .build();
@@ -43,7 +58,7 @@ public class JNPMService
 	}
 	
 	public static JNPMService instance() {
-		if(INSTANCE==null) throw new IllegalStateException("Configure JNPM instance first by calling JNPM.configure(settings)");
+		if(!isConfigured()) throw new IllegalStateException("Configure JNPM instance first by calling JNPM.configure(settings)");
 		return INSTANCE;
 	}
 	
@@ -58,8 +73,12 @@ public class JNPMService
 		return preserved;
 	}
 	
+	public static boolean isConfigured() {
+		return INSTANCE!=null;
+	}
+	
 	public static synchronized JNPMService configure(JNPMSettings settings) {
-		if(INSTANCE!=null) throw new IllegalStateException("You can't configure JNPM twise: it's already initiated");
+		if(isConfigured()) throw new IllegalStateException("You can't configure JNPM twise: it's already initiated");
 		try {
 			settings.createAllDirectories();
 			log.info("Settings: "+settings);

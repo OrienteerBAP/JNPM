@@ -25,19 +25,19 @@ public abstract class AbstractTraversalNode {
 	private Collection<TraversalTree> children = Collections.unmodifiableCollection(modifiableChildren.values());
 	@NonFinal
 	protected int level;
+	protected ITraversalRule rule;
 	
-	public AbstractTraversalNode() {
-		this(null);
+	public AbstractTraversalNode(ITraversalRule rule) {
+		this(null, rule);
 	}
 	
-	public AbstractTraversalNode(AbstractTraversalNode parent) {
+	public AbstractTraversalNode(AbstractTraversalNode parent, ITraversalRule rule) {
 		this.parent = parent;
+		this.rule = rule;
 		this.level = parent!=null?parent.level+1:0;
 	}
 	
-	public Observable<TraversalTree> getNextTraversalNodes(ITraversalRule rule) {
-		return Observable.empty();
-	}
+	public abstract Observable<TraversalTree> getNextTraversalNodes();
 	
 	public boolean isTraversableDeeper() {
 		return true;

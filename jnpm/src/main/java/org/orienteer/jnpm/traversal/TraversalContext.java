@@ -28,10 +28,11 @@ public class TraversalContext extends AbstractTraversalNode {
 	@Getter(AccessLevel.NONE)
 	private Map<VersionInfo, TraversalTree> traversed = new ConcurrentHashMap<VersionInfo, TraversalTree>();
 	
-	public TraversalContext(TraverseDirection direction, VersionInfo... roots) {
+	public TraversalContext(TraverseDirection direction, ITraversalRule rule, VersionInfo... roots) {
+		super(rule);
 		this.direction = direction;
 		for (VersionInfo versionInfo : roots) {
-			this.modifiableChildren.put(versionInfo, new TraversalTree(this, null, versionInfo));
+			this.modifiableChildren.put(versionInfo, new TraversalTree(this, null, versionInfo, rule));
 		}
 		this.level=-1;
 	}
@@ -54,7 +55,7 @@ public class TraversalContext extends AbstractTraversalNode {
 	}
 	
 	@Override
-	public Observable<TraversalTree> getNextTraversalNodes(ITraversalRule rule) {
+	public Observable<TraversalTree> getNextTraversalNodes() {
 		return Observable.fromIterable(getChildren());
 	}
 	

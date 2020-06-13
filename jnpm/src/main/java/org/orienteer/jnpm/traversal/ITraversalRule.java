@@ -9,12 +9,12 @@ import org.orienteer.jnpm.dm.VersionInfo;
 
 public interface ITraversalRule {
 
-	public static final ITraversalRule DEPENDENCIES = new TraversalRule(VersionInfo::getDependencies);
-	public static final ITraversalRule DEV_DEPENDENCIES = new TraversalRule(VersionInfo::getDevDependencies);
-	public static final ITraversalRule OPT_DEPENDENCIES = new TraversalRule(VersionInfo::getOptionalDependencies);
-	public static final ITraversalRule PEER_DEPENDENCIES = new TraversalRule(VersionInfo::getPeerDependencies);
+	public static final ITraversalRule DEPENDENCIES = new TraversalRule("Dependencies", VersionInfo::getDependencies);
+	public static final ITraversalRule DEV_DEPENDENCIES = new TraversalRule("Dev Dependencies", VersionInfo::getDevDependencies);
+	public static final ITraversalRule OPT_DEPENDENCIES = new TraversalRule("Opt Dependencies", VersionInfo::getOptionalDependencies);
+	public static final ITraversalRule PEER_DEPENDENCIES = new TraversalRule("Peer Dependencies", VersionInfo::getPeerDependencies);
 	
-	public static final ITraversalRule NO_DEPENDENCIES = new TraversalRule(v -> new HashMap<String, String>());
+	public static final ITraversalRule NO_DEPENDENCIES = new TraversalRule("No Dependencies", v -> new HashMap<String, String>());
 	
 	public Map<String, String> getNextDependencies(VersionInfo version);
 	

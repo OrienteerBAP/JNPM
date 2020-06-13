@@ -105,11 +105,11 @@ public interface RxJNPMService {
    
 	
 	public default Observable<TraversalTree> traverse(TraverseDirection direction, ITraversalRule rule, VersionInfo... roots) {
-		TraversalContext ctx = new TraversalContext(direction, roots);
-		return traverse(ctx, true, rule);
+		TraversalContext ctx = new TraversalContext(direction, rule, roots);
+		return traverse(ctx, true);
 	}
     
-	public default Observable<TraversalTree> traverse(AbstractTraversalNode node, boolean doForThis, ITraversalRule rule) {
+	public default Observable<TraversalTree> traverse(AbstractTraversalNode node, boolean doForThis) {
 		TraversalContext ctx = node.getContext();
 		return Observable.defer(() -> {
 			Logger log = ctx.getLogger();
@@ -121,7 +121,7 @@ public interface RxJNPMService {
 			
 			if(node.isTraversableDeeper()) {
 				
-					Observable<TraversalTree> cachedDependencies = node.getNextTraversalNodes(rule)
+					Observable<TraversalTree> cachedDependencies = node.getNextTraversalNodes()
 												.cache();
 					switch (ctx.getDirection()) {
 						case WIDER:
@@ -129,12 +129,12 @@ public interface RxJNPMService {
 							setToDo.add(cachedDependencies
 									.doOnNext(t ->  t.commit()));
 							// Go to dependencies
-							setToDo.add(cachedDependencies.flatMap(t -> traverse(t, false, ITraversalRule.DEPENDENCIES)));
+							setToDo.add(cachedDependencies.flatMap(t -> traverse(t, false)));
 							
 							break;
 						case DEEPER:
 							// Go to dependencies right away
-							setToDo.add(cachedDependencies.flatMap(t -> traverse(t, true, ITraversalRule.DEPENDENCIES)));
+							setToDo.add(cachedDependencies.flatMap(t -> traverse(t, true)));
 							break;
 					}
 			}

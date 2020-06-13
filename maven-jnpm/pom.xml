@@ -12,6 +12,11 @@
   <name>JNPM Maven Plugin</name>
   <url>http://maven.apache.org</url>
   <dependencies>
+  	<dependency>
+      <groupId>org.orienteer.jnpm</groupId>
+      <artifactId>jnpm</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
@@ -23,16 +28,63 @@
       <version>3.6.0</version>
       <scope>provided</scope>
  	</dependency>
- 	<dependency>
+	<dependency>
 	   <groupId>org.apache.maven</groupId>
-	   <artifactId>maven-project</artifactId>
-	  <version>2.2.1</version>
+	   <artifactId>maven-core</artifactId>
+	  <version>3.6.3</version>
+	  <scope>test</scope>
 	</dependency>
+	<dependency>
+	    <groupId>org.apache.maven</groupId>
+	    <artifactId>maven-compat</artifactId>
+	    <version>3.6.3</version>
+	    <scope>test</scope>
+	</dependency>
+	<dependency>
+      <groupId>org.apache.maven.plugin-testing</groupId>
+      <artifactId>maven-plugin-testing-harness</artifactId>
+      <version>3.3.0</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+	<!-- <dependency>
+	    <groupId>org.apache.maven.shared</groupId>
+	    <artifactId>maven-verifier</artifactId>
+	    <version>1.7.2</version>
+	    <scope>test</scope>
+	</dependency> -->
   </dependencies>
+  <build>
+  	<plugins>
+  		<plugin>
+             <groupId>org.apache.maven.plugins</groupId>
+             <artifactId>maven-plugin-plugin</artifactId>
+             <version>3.6.0</version>
+             <!-- <configuration>
+                 <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                 <goalPrefix>jnpm</goalPrefix>
+             </configuration>-->
+             <executions>
+                <execution>
+                    <id>default-descriptor</id>
+                    <goals>
+                        <goal>descriptor</goal>
+                    </goals>
+                    <phase>process-classes</phase>
+                </execution>
+                <execution>
+                    <id>help-descriptor</id>
+                    <goals>
+                        <goal>helpmojo</goal>
+                    </goals>
+                    <phase>process-classes</phase>
+                </execution>
+            </executions>
+         </plugin>
+  	</plugins>
+  </build>
 </project>

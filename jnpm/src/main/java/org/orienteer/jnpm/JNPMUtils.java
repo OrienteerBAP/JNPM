@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -98,7 +100,7 @@ public final class JNPMUtils {
 				
 					ArchiveEntry entry;
 					while((entry = a.getNextEntry()) !=null) {
-						log.info("Scanning: "+entry.getName());
+//						log.info("Scanning: "+entry.getName());
 						if(path.equals(entry.getName())) {
 							IOUtils.copy(a, out);
 							return;
@@ -129,7 +131,7 @@ public final class JNPMUtils {
 				while((entry = a.getNextEntry()) !=null) {
 					if(matcher!=null && !matcher.test(entry)) continue;
 					String entryName = entry.getName();
-					log.info("Scanning: "+entryName);
+//					log.info("Scanning: "+entryName);
 					String newName = pathConverter!=null?pathConverter.apply(entryName):entryName;
 					Path newPath = destinationDir.resolve(newName);
 					if(!newPath.toAbsolutePath().startsWith(destinationDir.toAbsolutePath()))
@@ -145,5 +147,14 @@ public final class JNPMUtils {
 					
 				}
 			}
+	}
+	
+	public static <K> Map<K, K> toMap(K... items) {
+		if(items.length % 2 !=0) throw new IllegalStateException("Expecting even number of arguments");
+		Map<K, K> map = new HashMap<>();
+		for(int i=0; i<items.length; i=i+2) {
+			map.put(items[i], items[i+1]);
+		}
+		return map;
 	}
 }

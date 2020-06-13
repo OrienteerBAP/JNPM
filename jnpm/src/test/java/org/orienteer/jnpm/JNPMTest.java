@@ -181,6 +181,33 @@ public class JNPMTest
 		}
     }
     
+    
+    @Test
+    public void testRules() throws Exception {
+		VersionInfo main = new VersionInfo();
+		main.setName("main");
+		main.setVersionAsString("1.0.0");
+		main.setDependencies(JNPMUtils.toMap("dep", "1.0.0"));
+		main.setDevDependencies(JNPMUtils.toMap("devdep", "2.0.0"));
+		main.setOptionalDependencies(JNPMUtils.toMap("optdep", "3.0.0"));
+		main.setPeerDependencies(JNPMUtils.toMap("peerdep", "4.0.0"));
+		assertTrue(ITraversalRule.NO_DEPENDENCIES.getNextDependencies(main).isEmpty());
+		assertEquals(1, ITraversalRule.DEPENDENCIES.getNextDependencies(main).size());
+		assertTrue(ITraversalRule.DEPENDENCIES.getNextDependencies(main).containsKey("dep"));
+		assertEquals(1, ITraversalRule.DEV_DEPENDENCIES.getNextDependencies(main).size());
+		assertTrue(ITraversalRule.DEV_DEPENDENCIES.getNextDependencies(main).containsKey("devdep"));
+		assertEquals(1, ITraversalRule.OPT_DEPENDENCIES.getNextDependencies(main).size());
+		assertTrue(ITraversalRule.OPT_DEPENDENCIES.getNextDependencies(main).containsKey("optdep"));
+		assertEquals(1, ITraversalRule.PEER_DEPENDENCIES.getNextDependencies(main).size());
+		assertTrue(ITraversalRule.PEER_DEPENDENCIES.getNextDependencies(main).containsKey("peerdep"));
+		
+		ITraversalRule comb = ITraversalRule.combine(ITraversalRule.DEPENDENCIES, ITraversalRule.DEV_DEPENDENCIES);
+		
+		assertEquals(2, comb.getNextDependencies(main).size());
+		assertTrue(comb.getNextDependencies(main).containsKey("dep"));
+		assertTrue(comb.getNextDependencies(main).containsKey("devdep"));
+    }
+    
     @Test
     public void traversal() throws IOException {
     	
@@ -195,7 +222,7 @@ public class JNPMTest
 								    			.doOnComplete(() -> log.info("Completed"))
 								    			.doOnError(t -> log.error("Error accured", t))
 								    			.test();
-    	List<TraversalContext> ctxs = test.awaitDone(20, TimeUnit.SECONDS)
+    	List<TraversalContext> ctxs = test.awaitDone(60, TimeUnit.SECONDS)
 				.values();
     	assertNotNull(ctxs);
     	assertEquals(1, ctxs.size());

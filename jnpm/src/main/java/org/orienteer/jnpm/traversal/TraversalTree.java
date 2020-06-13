@@ -39,8 +39,8 @@ public class TraversalTree extends AbstractTraversalNode {
 	@NonFinal
 	private boolean duplicate = false;
 	
-	TraversalTree(TraversalContext context, TraversalTree depender, VersionInfo version) {
-		super(depender!=null?depender:context);
+	TraversalTree(TraversalContext context, TraversalTree depender, VersionInfo version, ITraversalRule rule) {
+		super(depender!=null?depender:context, rule);
 		this.context = context;
 		this.depender = depender;
 		this.version = version;
@@ -79,13 +79,13 @@ public class TraversalTree extends AbstractTraversalNode {
 	public TraversalTree subTreeFor(VersionInfo version) {
 		TraversalTree ret = modifiableDependencies.get(version);
 		if(ret==null) {
-			ret = new TraversalTree(context, this, version);
+			ret = new TraversalTree(context, this, version, TraversalRule.DEPENDENCIES);
 		}
 		return ret;
 	}
 	
 	@Override
-	public Observable<TraversalTree> getNextTraversalNodes(ITraversalRule rule) {
+	public Observable<TraversalTree> getNextTraversalNodes() {
 		return getVersion().getDependencies(rule).map(v -> subTreeFor(v));
 	}
 	

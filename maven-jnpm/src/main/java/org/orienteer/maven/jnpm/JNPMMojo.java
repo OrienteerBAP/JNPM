@@ -21,10 +21,21 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.orienteer.jnpm.IInstallationStrategy;
+import org.orienteer.jnpm.InstallationStrategy;
+import org.orienteer.jnpm.JNPMService;
+import org.orienteer.jnpm.JNPMSettings;
+import org.orienteer.jnpm.RxJNPMService;
+import org.orienteer.jnpm.traversal.ITraversalRule;
+import org.orienteer.jnpm.traversal.TraversalTree;
+import org.orienteer.jnpm.traversal.TraverseDirection;
+
+import io.reactivex.Observable;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 
 /**
  * Goal which download and extract npm resources
@@ -37,13 +48,40 @@ public class JNPMMojo
     /**
      * Location of the output directory
      */
-	@Parameter(defaultValue = "${project.build.directory}", required = true, readonly = true)
+	@Parameter(defaultValue = "${project.build.directory}", required = true)
     private File outputDirectory;
+	
+	@Parameter(required = true)
+	private String packages;
+	
+	@Parameter(defaultValue = "SIMPLE")
+	private InstallationStrategy strategy;
+	
+	@Parameter(defaultValue = "false")
+	private boolean getProd;
+	@Parameter(defaultValue = "false")
+	private boolean getDev;
+	@Parameter(defaultValue = "false")
+	private boolean getOptional;
+	@Parameter(defaultValue = "false")
+	private boolean getPeer;
 
     public void execute()
         throws MojoExecutionException
     {
-        File f = outputDirectory;
+    	getLog().info("Output directory: "+outputDirectory);
+    	getLog().info("Packages for installation: "+packages);
+    	getLog().info("Strategy for installation: "+strategy);
+    	if(!JNPMService.isConfigured())
+    		JNPMService.configure(JNPMSettings.builder().build());
+    	RxJNPMService rxService = JNPMService.instance().getRxService();
+    	getLog().info("Prod="+getProd+" dev="+getDev+" optional="+getOptional+" peer="+getPeer);
+    	ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
+    	String[] packageStatements = packages.split("\\s*[,\\s]\\s*");
+    	Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packageStatements)
+				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
+		observable.flatMapCompletable(t -> t.install(outputDirectory.toPath(), strategy)).blockingAwait();
+        /*File f = outputDirectory;
 
         if ( !f.exists() )
         {
@@ -76,6 +114,6 @@ public class JNPMMojo
                     // ignore
                 }
             }
-        }
+        }*/
     }
 }
