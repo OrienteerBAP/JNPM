@@ -15,7 +15,8 @@
   			<artifactId>maven-jnpm</artifactId>
   			<version>1.0-SNAPSHOT</version>
   			<configuration>
-  				<packages>a</packages>
+  				<outputDirectory>${project.build.directory}/nondefault</outputDirectory>
+  				<packages>a b</packages>
   			</configuration>
   		</plugin>
   	</plugins>

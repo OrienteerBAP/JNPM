@@ -42,9 +42,13 @@ public class JNPMMojoTest {
 	}
 	
 	@Test
-    public void testSomething()
+    public void testPluginExecution()
         throws Exception
     {
 		mojo.execute();
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/a").exists());
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/b").exists());
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/a/package.json").exists());
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/b/package.json").exists());
     }
 }
