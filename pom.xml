@@ -152,7 +152,7 @@
 	</dependencyManagement>
 	<modules>
 		<module>jnpm</module>
-	  <module>maven-jnpm</module>
+	  <module>maven</module>
   </modules>
   <build>
     <pluginManagement>
