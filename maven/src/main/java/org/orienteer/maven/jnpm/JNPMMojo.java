@@ -48,13 +48,13 @@ public class JNPMMojo
     /**
      * Location of the output directory
      */
-	@Parameter(defaultValue = "${project.build.directory}", required = true)
+	@Parameter(defaultValue = "${project.build.directory}/generated-resources/", required = true)
     private File outputDirectory;
 	
 	@Parameter(required = true)
 	private String packages;
 	
-	@Parameter(defaultValue = "SIMPLE")
+	@Parameter(defaultValue = "WEBJARS")
 	private InstallationStrategy strategy;
 	
 	@Parameter(defaultValue = "false")

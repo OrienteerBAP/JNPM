@@ -46,9 +46,9 @@ public class JNPMMojoTest {
         throws Exception
     {
 		mojo.execute();
-		assertTrue(new File(testProjectTargetDirectory, "nondefault/a").exists());
-		assertTrue(new File(testProjectTargetDirectory, "nondefault/b").exists());
-		assertTrue(new File(testProjectTargetDirectory, "nondefault/a/package.json").exists());
-		assertTrue(new File(testProjectTargetDirectory, "nondefault/b/package.json").exists());
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/META-INF/resources/webjars/a").exists());
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/META-INF/resources/webjars/b").exists());
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/META-INF/resources/webjars/a/2.1.2/package.json").exists());
+		assertTrue(new File(testProjectTargetDirectory, "nondefault/META-INF/resources/webjars/b/2.0.1/package.json").exists());
     }
 }

@@ -27,5 +27,20 @@ public enum InstallationStrategy implements IInstallationStrategy{
 		public Path mapPath(Path rootPath, TraversalTree tree) {
 			return rootPath.resolve(tree.getVersion().getName());
 		}
-	};
+	},
+	SIMPLE_VERSIONED {
+		@Override
+		public Path mapPath(Path rootPath, TraversalTree tree) {
+			return rootPath.resolve(tree.getVersion().getName())
+						   .resolve(tree.getVersion().getVersionAsString());
+		}
+	},
+	WEBJARS {
+		@Override
+		public Path mapPath(Path rootPath, TraversalTree tree) {
+			return rootPath.resolve("META-INF/resources/webjars")
+						   .resolve(tree.getVersion().getName())
+					       .resolve(tree.getVersion().getVersionAsString());
+		}
+	}
 }
