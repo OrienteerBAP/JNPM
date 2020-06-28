@@ -33,6 +33,7 @@ import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
 import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.TraversalContext;
+import org.orienteer.jnpm.traversal.TraversalRule;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
@@ -288,5 +289,28 @@ public class JNPMTest
     	assertTrue("Target file not found: "+filePathToRead, filePathToRead.toFile().exists());
     	String packageContent = readFile(filePathToRead);
     	assertTrue("Target file doesn't contain required content: "+content,packageContent.contains(content));
+    }
+    
+    @Test
+    public void readmeExamplesTest() throws Exception {
+    	//Print NPM Registry Information
+    	System.out.println(JNPMService.instance().getRegistryInfo());
+    	//Retrieve and print VUE package latest version
+    	System.out.println(JNPMService.instance().getPackageInfo("vue").getLatest());
+    	//Print package description for vue@2.6.11
+    	System.out.println(JNPMService.instance().getVersionInfo("vue", "2.6.11").getDescription());
+    	//Print latest version prior to vue version 2 official release
+    	System.out.println(JNPMService.instance().bestMatch("vue@<2").getVersionAsString());
+    	//Download tarball for vue@2.6.11 and print localpath
+    	VersionInfo vueVersion = JNPMService.instance().getVersionInfo("vue", "2.6.11");
+    	vueVersion.downloadTarball().blockingAwait();
+    	System.out.println(vueVersion.getLocalTarball().getAbsolutePath());
+    	//Search for "vue" and print description for first result
+    	System.out.println(JNPMService.instance().search("vue").getObjects().get(0).getSearchPackage().getDescription());
+    	//Traverse through all dev dependencies of latest vue package, print information
+    	// and install as NPM do (node_modules/vue and etc)
+    	JNPMService.instance().getRxService()
+    		.traverse(TraverseDirection.WIDER, TraversalRule.DEV_DEPENDENCIES, "vue")
+    		.subscribe(t -> {System.out.println(t); t.install(Paths.get("target", "readme"), InstallationStrategy.NPM);});
     }
 }

@@ -8,7 +8,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import org.orienteer.jnpm.dm.PackageInfo;
+import org.orienteer.jnpm.dm.RegistryInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
+import org.orienteer.jnpm.dm.search.SearchResults;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.zafarkhaja.semver.Version;
 
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
@@ -24,6 +27,7 @@ import okhttp3.Protocol;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.http.Query;
 
 @Slf4j
 public class JNPMService 
@@ -98,6 +102,10 @@ public class JNPMService
 		return rxService;
 	}
 	
+	public RegistryInfo getRegistryInfo() {
+		return rxService.getRegistryInfo().blockingGet();
+	}
+	
 	public PackageInfo getPackageInfo(String packageName) {
     	return rxService.getPackageInfo(packageName).blockingGet();
     }
@@ -123,4 +131,21 @@ public class JNPMService
     public VersionInfo bestMatch(String expression) {
     	return rxService.bestMatch(expression).blockingGet();
     }
+    
+    public SearchResults search(String text, Integer size, Integer from,
+									Float quality, Float popularity, Float maintenance) {
+    	return rxService.search(text, size, from, quality, popularity, maintenance).blockingGet();
+    }
+    
+    public  SearchResults search(String text, Integer size, Integer from) {
+		return search(text, size, from, null, null, null);
+	}
+	
+	public SearchResults search(String text, Integer size) {
+		return search(text, size, null);
+	}
+	
+	public SearchResults search(String text) {
+		return search(text, null);
+	}
 }
