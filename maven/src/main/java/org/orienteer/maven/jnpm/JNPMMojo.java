@@ -18,9 +18,13 @@ package org.orienteer.maven.jnpm;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.MavenProjectHelper;
 import org.orienteer.jnpm.IInstallationStrategy;
 import org.orienteer.jnpm.InstallationStrategy;
 import org.orienteer.jnpm.JNPMService;
@@ -36,19 +40,24 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Goal which download and extract npm resources
  *
  */
-@Mojo (name = "install", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+@Mojo (name = "install", 
+			defaultPhase = LifecyclePhase.GENERATE_RESOURCES, 
+			requiresDependencyResolution = ResolutionScope.NONE,
+			threadSafe = true)
 public class JNPMMojo
     extends AbstractMojo
 {
     /**
      * Location of the output directory
      */
-	@Parameter(defaultValue = "${project.build.directory}/generated-resources/", required = true)
+	@Parameter(defaultValue = "${project.build.directory}/jnpm/", required = true)
     private File outputDirectory;
 	
 	@Parameter(required = true)
@@ -65,6 +74,21 @@ public class JNPMMojo
 	private boolean getOptional;
 	@Parameter(defaultValue = "false")
 	private boolean getPeer;
+	
+	@Parameter(defaultValue = "true")
+	private boolean includeAsResources;
+	
+	@Parameter
+    private List<String> includes;
+	
+	@Parameter
+    private List<String> excludes;
+	
+	@Parameter(defaultValue = "${project}", readonly = true)
+    private MavenProject project;
+	
+	@Component
+    private MavenProjectHelper projectHelper;
 
     public void execute()
         throws MojoExecutionException
@@ -81,39 +105,6 @@ public class JNPMMojo
     	Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packageStatements)
 				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
 		observable.flatMapCompletable(t -> t.install(outputDirectory.toPath(), strategy)).blockingAwait();
-        /*File f = outputDirectory;
-
-        if ( !f.exists() )
-        {
-            f.mkdirs();
-        }
-
-        File touch = new File( f, "touch.txt" );
-
-        FileWriter w = null;
-        try
-        {
-            w = new FileWriter( touch );
-
-            w.write( "touch.txt" );
-        }
-        catch ( IOException e )
-        {
-            throw new MojoExecutionException( "Error creating file " + touch, e );
-        }
-        finally
-        {
-            if ( w != null )
-            {
-                try
-                {
-                    w.close();
-                }
-                catch ( IOException e )
-                {
-                    // ignore
-                }
-            }
-        }*/
+		if(includeAsResources) projectHelper.addResource(project, outputDirectory.getAbsolutePath(), includes, excludes);
     }
 }
