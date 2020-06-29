@@ -44,12 +44,14 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Goal which download and extract npm resources
+ * Goal to download, extract and attach npm resources
  *
  */
 @Mojo (name = "install", 
 			defaultPhase = LifecyclePhase.GENERATE_RESOURCES, 
 			requiresDependencyResolution = ResolutionScope.NONE,
+			requiresProject = true,
+			requiresOnline = true,
 			threadSafe = true)
 public class JNPMMojo
     extends AbstractMojo
@@ -60,27 +62,57 @@ public class JNPMMojo
 	@Parameter(defaultValue = "${project.build.directory}/jnpm/", required = true)
     private File outputDirectory;
 	
+	/**
+	 * NPM packages to be downloaded and extracted (For example: vue@2.6.11)
+	 */
 	@Parameter(required = true)
 	private String packages;
 	
+	/**
+	 * Installation strategy to be used
+	 */
 	@Parameter(defaultValue = "WEBJARS")
 	private InstallationStrategy strategy;
 	
+	/**
+	 * Download direct dependencies
+	 */
 	@Parameter(defaultValue = "false")
 	private boolean getProd;
+	
+	/**
+	 * Download development dependencies
+	 */
 	@Parameter(defaultValue = "false")
 	private boolean getDev;
+	
+	/**
+	 * Download optional dependencies
+	 */
 	@Parameter(defaultValue = "false")
 	private boolean getOptional;
+	
+	/**
+	 * Download peer dependencies
+	 */
 	@Parameter(defaultValue = "false")
 	private boolean getPeer;
 	
+	/**
+	 * Attach downloaded resources to the build process
+	 */
 	@Parameter(defaultValue = "true")
-	private boolean includeAsResources;
+	private boolean attachResources;
 	
+	/**
+	 * What should be included as resources (Default: empty - means everything)
+	 */
 	@Parameter
     private List<String> includes;
 	
+	/**
+	 * What has to be excluded from resources to be attached
+	 */
 	@Parameter
     private List<String> excludes;
 	
@@ -105,6 +137,6 @@ public class JNPMMojo
     	Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packageStatements)
 				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
 		observable.flatMapCompletable(t -> t.install(outputDirectory.toPath(), strategy)).blockingAwait();
-		if(includeAsResources) projectHelper.addResource(project, outputDirectory.getAbsolutePath(), includes, excludes);
+		if(attachResources) projectHelper.addResource(project, outputDirectory.getAbsolutePath(), includes, excludes);
     }
 }

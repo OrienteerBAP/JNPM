@@ -63,7 +63,7 @@
   		<plugin>
              <groupId>org.apache.maven.plugins</groupId>
              <artifactId>maven-plugin-plugin</artifactId>
-             <version>3.6.0</version>
+             <version>${maven.version}</version>
              <!-- <configuration>
                  <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                  <goalPrefix>jnpm</goalPrefix>
@@ -74,14 +74,12 @@
                     <goals>
                         <goal>descriptor</goal>
                     </goals>
-                    <phase>process-classes</phase>
                 </execution>
                 <execution>
                     <id>help-descriptor</id>
                     <goals>
                         <goal>helpmojo</goal>
                     </goals>
-                    <phase>process-classes</phase>
                 </execution>
             </executions>
          </plugin>
