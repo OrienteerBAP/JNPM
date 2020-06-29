@@ -1,66 +1,99 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.orienteer.jnpm</groupId>
 		<artifactId>jnpm-parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-  <artifactId>jnpm</artifactId>
+	<artifactId>jnpm</artifactId>
 
-  <name>JNPM Core Library</name>
+	<name>JNPM Core Library</name>
 
-  <dependencies>
-  	<dependency>
-	  <groupId>com.squareup.retrofit2</groupId>
-	  <artifactId>retrofit</artifactId>
-	</dependency>
-	<dependency>
-	  <groupId>com.squareup.retrofit2</groupId>
-	  <artifactId>converter-jackson</artifactId>
-	</dependency>
-	<dependency>
-	  <groupId>com.squareup.retrofit2</groupId>
-	  <artifactId>adapter-rxjava2</artifactId>
-	</dependency>
-	<dependency>
-	    <groupId>io.reactivex.rxjava2</groupId>
-	    <artifactId>rxjava</artifactId>
-	</dependency>
-	<dependency>
-       <groupId>org.apache.commons</groupId>
-       <artifactId>commons-compress</artifactId>
-    </dependency>
-    <dependency>
-		<groupId>com.github.zafarkhaja</groupId>
-		<artifactId>java-semver</artifactId>
-	</dependency>
-    <dependency> 
-	  <groupId>org.slf4j</groupId>
-	  <artifactId>slf4j-log4j12</artifactId>
-	</dependency>
-	<dependency>
-	    <groupId>info.picocli</groupId>
-	    <artifactId>picocli</artifactId>
-	</dependency>
-    <dependency>
-		<groupId>org.projectlombok</groupId>
-		<artifactId>lombok</artifactId>
-		<scope>provided</scope>
-	</dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>com.squareup.retrofit2</groupId>
+			<artifactId>retrofit</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.retrofit2</groupId>
+			<artifactId>converter-jackson</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.retrofit2</groupId>
+			<artifactId>adapter-rxjava2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.reactivex.rxjava2</groupId>
+			<artifactId>rxjava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.github.zafarkhaja</groupId>
+			<artifactId>java-semver</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>jnpm</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<!-- <addClasspath>true</addClasspath> -->
+							<mainClass>org.orienteer.jnpm.cli.JNPM</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<finalName>jnpm-uber</finalName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
