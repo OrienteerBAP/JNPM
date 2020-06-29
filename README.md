@@ -4,7 +4,7 @@ Native Java API to work with JavaScript Node Package Manager (NPM): query, retri
 
 1. [Java API](#java-api)
 2. [Command Line Interface](#command-line-interface)
-3. [Maven Plugin](#maven-plugin) (very lightweight replacement for [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin))
+3. [Maven Plugin](#maven-plugin) (very lightweight and fast replacement for [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin))
 4. [Make your CDN](#cdn)
 
 ## Java API
@@ -121,6 +121,72 @@ json modification
                             SIMPLE_VERSIONED, WEBJARS
 ```
 ## Maven Plugin
+
+JNPM maven plugin allows you natively integrate NPM resources into your build process.
+For example, you can download and pack JS packages inside your WAR to use later through WebJars extensions.
+To include `vue` and into your WAR please add the following into build>plugins section of your `pom.xml`
+
+```xml
+<plugin>
+<groupId>org.orienteer.jnpm</groupId>
+    <artifactId>jnpm-maven-plugin</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<executions>
+		<execution>
+			<goals>
+				<goal>install</goal>
+			</goals>
+			<configuration>
+				<packages>vue@2.6.11 vuex@3.4.0</packages>
+			</configuration>
+		</execution>
+	</executions>
+</plugin>
+```
+
+More details about the plugin:
+
+```
+jnpm:install
+  Description: Goal to download, extract and attach npm resources
+  Implementation: org.orienteer.maven.jnpm.JNPMMojo
+  Language: java
+  Bound to phase: generate-resources
+
+  Available parameters:
+
+    attachResources (Default: true)
+      Attach downloaded resources to the build process
+
+    excludes
+      What has to be excluded from resources to be attached
+
+    getDev (Default: false)
+      Download development dependencies
+
+    getOptional (Default: false)
+      Download optional dependencies
+
+    getPeer (Default: false)
+      Download peer dependencies
+
+    getProd (Default: false)
+      Download direct dependencies
+
+    includes
+      What should be included as resources (Default: empty - means everything)
+
+    outputDirectory (Default: ${project.build.directory}/jnpm/)
+      Required: true
+      Location of the output directory
+
+    packages
+      Required: true
+      NPM packages to be downloaded and extracted (For example: vue@2.6.11)
+
+    strategy (Default: WEBJARS)
+      Installation strategy to be used
+```
 
 ## CDN
 
