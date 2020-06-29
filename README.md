@@ -64,6 +64,62 @@ Read [![javadoc](https://javadoc.io/badge2/org.orienteer.jnpm/jnpm/javadoc.svg)]
 
 ## Command Line Interface
 
+```
+Usage: jnpm [-hV] [--download-dir=<downloadDirectory>]
+            [--home-dir=<homeDirectory>] [--install-dir=<installDirectory>]
+            [COMMAND]
+Java implementation of Node Package Manager
+      --download-dir=<downloadDirectory>
+                  Cache directory for JNPM to download packages to (default:
+                    <home-dir>/cache/)
+  -h, --help      Show this help message and exit.
+      --home-dir=<homeDirectory>
+                  Home directory for JNPM (default: C:\Users\naryzhny\.jnpm)
+      --install-dir=<installDirectory>
+                  Global install directory for JNPM (default:
+                    <home-dir>/node_modules/)
+  -V, --version   Print version information and exit.
+Commands:
+  download, d  Download packages into local cache
+  extract, e   Extract packages: very similiar to 'npm install', but without
+                 changing package.json modification
+``` 
+```
+Usage: jnpm download [-h] [--[no-]dev] [--[no-]download] [--[no-]optional] [--
+                     [no-]peer] [--[no-]prod] <packageStatements>...
+Download packages into local cache
+      <packageStatements>...
+                        Packages to be retrieved
+      --[no-]dev        Download dev dependencies
+      --[no-]download   Download by default. Negate if  just attempt to lookup
+                          is needed
+  -h, --help
+      --[no-]optional   Download optional dependencies
+      --[no-]peer       Download peer dependencies
+      --[no-]prod       Download dependencies (default)
+```
+
+```
+Usage: jnpm extract [-gh] [--[no-]dev] [--[no-]download] [--[no-]optional] [--
+                    [no-]peer] [--[no-]prod] [-o=<folder>] [-s=<strategy>]
+                    <packageStatements>...
+Extract packages: very similiar to 'npm install', but without changing package.
+json modification
+      <packageStatements>...
+                          Packages to be retrieved
+      --[no-]dev          Download dev dependencies
+      --[no-]download     Download by default. Negate if  just attempt to
+                            lookup is needed
+  -g                      Extract package(s) globally
+  -h, --help
+  -o, --output=<folder>   Output folder to extract to
+      --[no-]optional     Download optional dependencies
+      --[no-]peer         Download peer dependencies
+      --[no-]prod         Download dependencies (default)
+  -s, --strategy=<strategy>
+                          Strategy for extraction: FLAT, NPM, SIMPLE,
+                            SIMPLE_VERSIONED, WEBJARS
+```
 ## Maven Plugin
 
 ## CDN
