@@ -137,7 +137,10 @@ To include `vue` and into your WAR please add the following into build>plugins s
 				<goal>install</goal>
 			</goals>
 			<configuration>
-				<packages>vue@2.6.11 vuex@3.4.0</packages>
+				<packages>
+					<package>vue@2.6.11</package>
+					<package>vuex@~3.4.0</package>
+				</packages>
 			</configuration>
 		</execution>
 	</executions>

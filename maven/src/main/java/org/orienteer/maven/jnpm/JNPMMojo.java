@@ -66,7 +66,7 @@ public class JNPMMojo
 	 * NPM packages to be downloaded and extracted (For example: vue@2.6.11)
 	 */
 	@Parameter(required = true)
-	private String packages;
+	private String[] packages;
 	
 	/**
 	 * Installation strategy to be used
@@ -126,15 +126,14 @@ public class JNPMMojo
         throws MojoExecutionException
     {
     	getLog().info("Output directory: "+outputDirectory);
-    	getLog().info("Packages for installation: "+packages);
+    	getLog().info("Packages for installation: "+String.join(", ", packages));
     	getLog().info("Strategy for installation: "+strategy);
     	if(!JNPMService.isConfigured())
     		JNPMService.configure(JNPMSettings.builder().build());
     	RxJNPMService rxService = JNPMService.instance().getRxService();
     	getLog().info("Prod="+getProd+" dev="+getDev+" optional="+getOptional+" peer="+getPeer);
     	ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
-    	String[] packageStatements = packages.split("\\s*[,\\s]\\s*");
-    	Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packageStatements)
+    	Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packages)
 				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
 		observable.flatMapCompletable(t -> t.install(outputDirectory.toPath(), strategy)).blockingAwait();
 		if(attachResources) projectHelper.addResource(project, outputDirectory.getAbsolutePath(), includes, excludes);

@@ -16,7 +16,10 @@
   			<version>1.0-SNAPSHOT</version>
   			<configuration>
   				<outputDirectory>${project.build.directory}/nondefault</outputDirectory>
-  				<packages>a@2.1.2 b@2.0.1</packages>
+  				<packages>
+  					<package>a@2.1.2</package>
+  					<package>b@2.0.1</package>
+ 				</packages>
   			</configuration>
   		</plugin>
   	</plugins>
