@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.AdditionalAnswers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.orienteer.jnpm.traversal.ITraversalRule.DEPENDENCIES;
 import static org.orienteer.jnpm.traversal.ITraversalRule.DEV_DEPENDENCIES;
@@ -37,10 +38,13 @@ import org.orienteer.jnpm.traversal.TraversalRule;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
+import com.github.zafarkhaja.semver.Version;
+
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.observers.TestObserver;
+import junit.framework.AssertionFailedError;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -312,5 +316,32 @@ public class JNPMTest
     	JNPMService.instance().getRxService()
     		.traverse(TraverseDirection.WIDER, TraversalRule.DEV_DEPENDENCIES, "vue")
     		.subscribe(t -> {System.out.println(t); t.install(Paths.get("target", "readme"), InstallationStrategy.NPM);});
+    }
+    
+    @Test
+    public void semverTest() throws Exception {
+    	assertTrue(Version.valueOf("2.6.11").satisfies("2.x"));
+    	assertTrue(!Version.valueOf("2.6.11").satisfies("1.x"));
+    	assertTrue(!Version.valueOf("2.6.11").satisfies("3.x"));
+    	assertSatisfies("2.6.1", new String[]{"1.x", "2.x", "3.x"},
+    							 new boolean[] {false, true, false});
+    	assertSatisfies("1.2.0", new String[]{"1.x", "2.x", "3.x"},
+				 new boolean[] {true, false, false});
+    	assertSatisfies("2.6.11", new String[]{"~1.5", "~2.5", "~2.6"},
+				 				  new boolean[] {false, false, true});
+    	assertSatisfies("3.0.0-beta.1", new String[]{"~1.5", "~2.5", "~2.6", "~3.0", "<3"},
+    									new boolean[] {false, false, false, false, true});
+    }
+    
+    private void assertSatisfies(String versionStr, String[] conditions, boolean[] results) {
+    	assertNotNull("Conditions shouldn't be bull", conditions);
+    	assertNotNull("Results samples shouldn't be bull", results);
+    	assertEquals("Length of conditions and results should match", conditions.length, results.length);
+    	assertTrue("Version should be valid", Version.isValid(versionStr));
+    	Version version = Version.valueOf(versionStr);
+    	for(int i=0; i<conditions.length; i++) {
+    		if(results[i] ^ version.satisfies(conditions[i]))
+    			throw new AssertionFailedError("Version '"+versionStr+"' should "+(results[i]?"":"NOT ")+"satisfy '"+conditions[i]+"'");
+    	}
     }
 }
