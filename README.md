@@ -193,3 +193,21 @@ jnpm:install
 
 ## CDN
 
+### Servlet
+
+Add the following mapping to your `web.xml`. Adjust as needed:
+
+```xml
+  <servlet>
+    <servlet-name>CDNServlet</servlet-name>
+    <servlet-class>org.orienteer.jnpm.cdn.CDNServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>CDNServlet</servlet-name>
+    <url-pattern>/cdn/*</url-pattern>
+  </servlet-mapping>
+```
+
+Files from NPM packages will be available through URLs with the following pattern: `http(s)://<host>:<port>/<deploy-folder>/cdn/<package expression>/<required file>`.
+For example: `http://localhost:8080/cdn/vue@2.6.11/dist/vue.js`
