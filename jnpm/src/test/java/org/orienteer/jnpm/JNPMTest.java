@@ -56,7 +56,8 @@ public class JNPMTest
 	
 	private static final Random RANDOM = new Random(); 
 	static {
-		JNPMService.configure(JNPMSettings.builder()
+		if(!JNPMService.isConfigured())
+			JNPMService.configure(JNPMSettings.builder()
 						.homeDirectory(Paths.get("target", ".jnpm"))
  						.build());
 	}

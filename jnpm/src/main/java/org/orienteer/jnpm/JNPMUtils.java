@@ -92,12 +92,12 @@ public final class JNPMUtils {
 	}
 	
 	public static void readTarball(File tarball, String path, OutputStream out) throws IOException {
-		if(tarball!=null && tarball.exists()) {
+		if(tarball!=null && tarball.exists() && path!=null) {
 			try (InputStream fi = new FileInputStream(tarball);
 				     InputStream bi = new BufferedInputStream(fi);
 				     InputStream gzi = new GzipCompressorInputStream(bi);
 				     ArchiveInputStream a = new TarArchiveInputStream(gzi)) {
-				
+				 	if(path.startsWith("/")) path = path.substring(1);
 					ArchiveEntry entry;
 					while((entry = a.getNextEntry()) !=null) {
 //						log.info("Scanning: "+entry.getName());
