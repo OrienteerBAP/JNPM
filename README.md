@@ -6,6 +6,8 @@ Native Java API to work with JavaScript Node Package Manager (NPM): query, retri
 2. [Command Line Interface](#command-line-interface)
 3. [Maven Plugin](#maven-plugin) (very lightweight and fast replacement for [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin))
 4. [Make your CDN](#cdn)
+	* [Servlet](#servlet)
+	* [Apache Wicket](#apache-wicket)
 
 ## Java API
 
@@ -207,6 +209,19 @@ Add the following mapping to your `web.xml`. Adjust as needed:
     <servlet-name>CDNServlet</servlet-name>
     <url-pattern>/cdn/*</url-pattern>
   </servlet-mapping>
+```
+
+Files from NPM packages will be available through URLs with the following pattern: `http(s)://<host>:<port>/<deploy-folder>/cdn/<package expression>/<required file>`.
+For example: `http://localhost:8080/cdn/vue@2.6.11/dist/vue.js`
+
+### Apache Wicket
+
+Add the following code to your [Apache Wicket](https://wicket.apache.org/) WebApplication:
+
+```java
+if(!JNPMService.isConfigured()) 
+   JNPMService.configure(JNPMSettings.builder().build()); //Configure as you wish
+   CDNWicketResource.mount(this, "/cdn");
 ```
 
 Files from NPM packages will be available through URLs with the following pattern: `http(s)://<host>:<port>/<deploy-folder>/cdn/<package expression>/<required file>`.
