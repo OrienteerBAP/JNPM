@@ -68,9 +68,8 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
 		int segments = params.getIndexedCount();
 		if(segments==0) return null;
 		StringBuilder sb = new StringBuilder();
-        for(int i=0; i<params.getIndexedCount();i++) {
-        	sb.append(params.get(i));
-        	if(i<segments-1) sb.append('/');
+        for(int i=0; i<segments;i++) {
+        	sb.append('/').append(params.get(i));
         }
         return sb.toString();
 	}

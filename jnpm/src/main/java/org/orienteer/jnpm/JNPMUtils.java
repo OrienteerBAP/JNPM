@@ -164,7 +164,7 @@ public final class JNPMUtils {
 	
 	public static String fileNameToMimeType(String fileName) {
 		if(fileName==null) return null;
-		int indx = fileName.indexOf('.');
+		int indx = fileName.lastIndexOf('.');
 		if(indx>=0) {
 			String extension = fileName.substring(indx+1).toLowerCase();
 			switch (extension) {
