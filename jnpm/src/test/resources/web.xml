@@ -15,4 +15,21 @@
 		<servlet-name>CDNServlet</servlet-name>
 		<url-pattern>/cdn/*</url-pattern>
 	</servlet-mapping>
+	
+	<filter>
+        <filter-name>JNPMApplication</filter-name>
+        <filter-class>org.apache.wicket.protocol.http.WicketFilter</filter-class>
+        <init-param>
+          <param-name>applicationClassName</param-name>
+          <param-value>org.orienteer.jnpm.cdn.CDNTestApplication</param-value>
+        </init-param>
+        <init-param>
+          <param-name>filterMappingUrlPattern</param-name>
+          <param-value>/*</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>JNPMApplication</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>

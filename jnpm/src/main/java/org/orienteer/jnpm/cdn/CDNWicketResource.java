@@ -1,5 +1,6 @@
 package org.orienteer.jnpm.cdn;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,6 +8,8 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.wicket.protocol.http.WebApplication;
+import org.apache.wicket.request.Response;
+import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.request.resource.AbstractResource;
 import org.apache.wicket.request.resource.ResourceReference;
@@ -17,7 +20,7 @@ import org.orienteer.jnpm.dm.VersionInfo;
 
 public class CDNWicketResource extends AbstractResource implements CDNResolver {
 	
-	public static final String DEFAULT_MOUNT = "/cdn/${package}/${version}/";
+	public static final String DEFAULT_MOUNT = "/cdn/";
 	public static final String RESOURCE_KEY = CDNWicketResource.class.getSimpleName();
 	public static final ResourceReference SHARED_RESOURCE = new SharedResourceReference(RESOURCE_KEY);
 	
@@ -32,10 +35,8 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
         response.setLastModified(INIT_TIME);
         if (response.dataNeedsToBeWritten(attributes)) {
             PageParameters params = attributes.getParameters();
-            String pckg = params.get("package").toString();
-            String version = params.get("version").toString();
-            String filePath = getPathInfo(params);
-            CDNRequest cdnRequest = new CDNRequest(pckg, version, filePath);
+            String pathInfo = getPathInfo(params);
+            CDNRequest cdnRequest = CDNRequest.valueOf(pathInfo);
             VersionInfo versionInfo = resolveVersion(cdnRequest);
             if(versionInfo!=null) {
             	response.setContentType(JNPMUtils.fileNameToMimeType(cdnRequest.getFileName()));
@@ -44,11 +45,20 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
 					
 					@Override
 					public void writeData(Attributes attributes) throws IOException {
-						resolveRequest(versionInfo, filePath, attributes.getResponse().getOutputStream());
+						try {
+							resolveRequest(versionInfo, cdnRequest.getPath(), attributes.getResponse().getOutputStream());
+						} catch (FileNotFoundException e) {
+							Response response = attributes.getResponse();
+							if (response instanceof WebResponse)
+							{
+								WebResponse webResponse = (WebResponse) response;
+								webResponse.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource was not found for "+cdnRequest);
+							}
+						}
 					}
 				});
             } else {
-            	response.setError(HttpServletResponse.SC_NOT_FOUND);
+            	response.setError(HttpServletResponse.SC_NOT_FOUND, "Resource was not found for "+cdnRequest);
             }
         }
         return response;

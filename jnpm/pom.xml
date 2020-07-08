@@ -75,6 +75,22 @@
 	</dependencies>
 	<build>
 		<finalName>jnpm</finalName>
+		<testResources>
+			<testResource>
+				<filtering>false</filtering>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<filtering>false</filtering>
+				<directory>src/test/java</directory>
+				<includes>
+					<include>**</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</testResource>
+		</testResources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -120,6 +136,8 @@
                     <supportedPackagings>
                         <supportedPackaging>jar</supportedPackaging>
                     </supportedPackagings>
+                    <useProvidedScope>true</useProvidedScope>
+                    <useTestScope>true</useTestScope>
                     <webApp>
                         <descriptor>src/test/resources/web.xml</descriptor>
                         <resourceBase>src/test/resources</resourceBase>

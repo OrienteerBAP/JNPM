@@ -37,8 +37,7 @@ public class CDNServlet extends HttpServlet implements CDNResolver {
 			resolveRequest(request, resp.getOutputStream());
 			resp.addHeader("Cache-Control", "public, max-age=604800, immutable");
 		} catch (IllegalArgumentException | FileNotFoundException e) {
-			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			resp.getWriter().write(e.getMessage());
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource was not found for provided path '"+req.getPathInfo()+"'");
 		}
 	}
 

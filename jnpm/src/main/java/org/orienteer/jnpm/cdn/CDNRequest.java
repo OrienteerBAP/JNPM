@@ -57,4 +57,9 @@ public class CDNRequest {
 			throw new IllegalArgumentException("Path '"+fullPath+"' should corresponds pattern '"+PATH_PATTERN+"'");
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return "CDNRequest for "+getPackageVersionExpression()+":"+getPath();
+	}
 }
