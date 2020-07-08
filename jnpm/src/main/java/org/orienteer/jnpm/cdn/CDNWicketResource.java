@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.wicket.protocol.http.WebApplication;
@@ -13,6 +12,7 @@ import org.apache.wicket.request.resource.AbstractResource;
 import org.apache.wicket.request.resource.ResourceReference;
 import org.apache.wicket.request.resource.SharedResourceReference;
 import org.apache.wicket.util.time.Time;
+import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
 public class CDNWicketResource extends AbstractResource implements CDNResolver {
@@ -25,7 +25,6 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
 	private static final Time INIT_TIME = Time.now();
 
 	private Map<String, VersionInfo> versionsCache = new HashMap<String, VersionInfo>();
-	private MimetypesFileTypeMap mimeTypeMap = new MimetypesFileTypeMap();
 	
 	@Override
 	protected ResourceResponse newResourceResponse(Attributes attributes) {
@@ -39,7 +38,7 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
             CDNRequest cdnRequest = new CDNRequest(pckg, version, filePath);
             VersionInfo versionInfo = resolveVersion(cdnRequest);
             if(versionInfo!=null) {
-            	response.setContentType(mimeTypeMap.getContentType(cdnRequest.getFileName()));
+            	response.setContentType(JNPMUtils.fileNameToMimeType(cdnRequest.getFileName()));
             	response.setCacheDurationToMaximum();
             	response.setWriteCallback(new WriteCallback() {
 					

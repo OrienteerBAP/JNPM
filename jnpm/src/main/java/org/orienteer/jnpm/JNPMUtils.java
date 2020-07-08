@@ -16,6 +16,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import javax.activation.MimetypesFileTypeMap;
+
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -156,5 +158,28 @@ public final class JNPMUtils {
 			map.put(items[i], items[i+1]);
 		}
 		return map;
+	}
+	
+	private static final MimetypesFileTypeMap mimeTypeMap = new MimetypesFileTypeMap();
+	
+	public static String fileNameToMimeType(String fileName) {
+		if(fileName==null) return null;
+		int indx = fileName.indexOf('.');
+		if(indx>=0) {
+			String extension = fileName.substring(indx+1).toLowerCase();
+			switch (extension) {
+			case "json":
+				return "application/json";
+			case "js":
+				return "text/javascript";
+			case "css":
+				return "text/css";
+			case "htm":
+			case "html":
+			case "xhtml":
+				return "text/html";
+			}
+		}
+		return mimeTypeMap.getContentType(fileName);
 	}
 }

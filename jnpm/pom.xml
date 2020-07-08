@@ -104,6 +104,36 @@
 					<finalName>jnpm-uber</finalName>
 				</configuration>
 			</plugin>
+			<plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <!-- <contextXml>${project.build.testOutputDirectory}/jetty-context.xml</contextXml>
+                    <jettyXml>src/main/webapp/WEB-INF/jetty.xml</jettyXml>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>orienteer.loader.repository.local</name>
+                            <value>${settings.localRepository}</value>
+                        </systemProperty>
+                    </systemProperties> -->
+                    <supportedPackagings>
+                        <supportedPackaging>jar</supportedPackaging>
+                    </supportedPackagings>
+                    <webApp>
+                        <descriptor>src/test/resources/web.xml</descriptor>
+                        <resourceBase>src/test/resources</resourceBase>
+                        <contextPath>/</contextPath>
+                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                        <webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
+                    </webApp>
+                    <httpConnector>
+                        <name>org.eclipse.jetty.server.nio.SelectChannelConnector</name>
+                        <port>8080</port>
+                        <idleTimeout>3600000</idleTimeout>
+                    </httpConnector>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 
