@@ -15,16 +15,25 @@ public interface CDNResolver {
 	
 	public Map<String, VersionInfo> getVersionsCache();
 	
+	public default VersionInfo resolveVersion(CDNRequest request) {
+		VersionInfo version =  getVersionsCache().computeIfAbsent(request.getPackageVersionExpression(),
+					expression -> {
+						VersionInfo ret = JNPMService.instance().bestMatch(expression);
+						if(ret==null) return NULL_VERSION;
+						ret.downloadTarball().blockingAwait();
+						return ret;
+					});
+		return version!=null && version != NULL_VERSION?version:null;
+	}
+	
 	public default void resolveRequest(CDNRequest request, OutputStream out) throws IOException {
 		
-		VersionInfo version = getVersionsCache().computeIfAbsent(request.getPackageVersionExpression(),
-															expression -> {
-																VersionInfo ret = JNPMService.instance().bestMatch(expression);
-																if(ret==null) return NULL_VERSION;
-																ret.downloadTarball().blockingAwait();
-																return ret;
-															});
+		VersionInfo version = resolveVersion(request);
 		if(version==null || version == NULL_VERSION) throw new FileNotFoundException("Package for expression '"+request.getPackageVersionExpression()+"' was not found");
-		JNPMUtils.readTarball(version.getLocalTarball(), "/package/"+request.getPath(), out);
+		resolveRequest(version, request.getPath(), out);
+	}
+	
+	public default void resolveRequest(VersionInfo version, String filePath, OutputStream out) throws IOException {
+		JNPMUtils.readTarball(version.getLocalTarball(), "/package/"+filePath, out);
 	}
 }

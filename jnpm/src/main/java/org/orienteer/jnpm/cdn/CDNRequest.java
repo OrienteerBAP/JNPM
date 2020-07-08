@@ -22,7 +22,7 @@ public class CDNRequest {
 	@NonFinal
 	private Boolean exactVersion;
 	
-	private CDNRequest(String packageName, String version, String path) {
+	public CDNRequest(String packageName, String version, String path) {
 		this.packageName = packageName;
 		this.versionExpression = version!=null && !version.isEmpty()?version:"latest";
 		int indx = path.indexOf("?");
@@ -40,6 +40,13 @@ public class CDNRequest {
 	
 	public String getPackageVersionExpression() {
 		return packageName+"@"+versionExpression;
+	}
+	
+	public static CDNRequest valueOf(String packageInfo, String filePath) {
+		int indx = packageInfo.indexOf("@");
+		String pck = indx<0?packageInfo:packageInfo.substring(0, indx);
+		String version = indx<0?packageInfo.substring(indx+1):null;
+		return new CDNRequest(pck, version, filePath);
 	}
 	
 	public static CDNRequest valueOf(String fullPath) {
