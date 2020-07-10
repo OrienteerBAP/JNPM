@@ -1,15 +1,25 @@
 package org.orienteer.jnpm.cdn;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.orienteer.jnpm.JNPMService;
+import org.orienteer.jnpm.JNPMUtils;
+import org.orienteer.jnpm.dm.VersionInfo;
 
 import com.github.zafarkhaja.semver.Version;
 
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
+/**
+ * Class-container to store request for resources out of CDN entry points (for example {@link CDNServlet})
+ */
 @Value
 public class CDNRequest {
+	
+	private static final VersionInfo NULL_VERSION = new VersionInfo();
 	
 	private static final String PATH_PATTERN = "/([^/@]*)@?([^/]*)/(.*)";
 	private static final Pattern PATH_REGEXP = Pattern.compile(PATH_PATTERN);
@@ -40,6 +50,17 @@ public class CDNRequest {
 	
 	public String getPackageVersionExpression() {
 		return packageName+"@"+versionExpression;
+	}
+	
+	public VersionInfo resolveVersion(Map<String, VersionInfo> versionsCache) {
+		VersionInfo version =  versionsCache.computeIfAbsent(getPackageVersionExpression(),
+				expression -> {
+					VersionInfo ret = JNPMService.instance().bestMatch(expression);
+					if(ret==null) return NULL_VERSION;
+					ret.downloadTarball().blockingAwait();
+					return ret;
+				});
+		return version!=null && version != NULL_VERSION?version:null;
 	}
 	
 	public static CDNRequest valueOf(String packageInfo, String filePath) {

@@ -14,7 +14,9 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-
+/**
+ * Extract command for JNPM CLI. Please read command description in corresponding annotation.
+ */
 @Command(name="extract", aliases = "e", description = "Extract packages: very similiar to 'npm install', but without changing package.json modification")
 @Slf4j
 public class ExtractCommand extends DownloadCommand {

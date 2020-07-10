@@ -5,6 +5,9 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
+/**
+ * Generic parent class for all data classes
+ */
 public abstract class AbstractInfo {
 	
 	private Map<String, Object> details = new LinkedHashMap<>();

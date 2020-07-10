@@ -34,7 +34,6 @@ import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
 import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.TraversalContext;
-import org.orienteer.jnpm.traversal.TraversalRule;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
@@ -315,7 +314,7 @@ public class JNPMTest
     	//Traverse through all dev dependencies of latest vue package, print information
     	// and install as NPM do (node_modules/vue and etc)
     	JNPMService.instance().getRxService()
-    		.traverse(TraverseDirection.WIDER, TraversalRule.DEV_DEPENDENCIES, "vue")
+    		.traverse(TraverseDirection.WIDER, ITraversalRule.DEV_DEPENDENCIES, "vue")
     		.subscribe(t -> {System.out.println(t); t.install(Paths.get("target", "readme"), InstallationStrategy.NPM);});
     }
     

@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.Data;
 
+/**
+ * Data class to store package information
+ */
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class PackageInfo extends AbstractArtifactInfo {

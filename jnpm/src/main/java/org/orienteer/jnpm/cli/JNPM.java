@@ -13,13 +13,16 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
+/**
+ * Main class for JNPM CLI
+ */
 @Command(name = "jnpm", mixinStandardHelpOptions = true, 
 description = "Java implementation of Node Package Manager",
 subcommands = {DownloadCommand.class, ExtractCommand.class})
 @Slf4j
 public class JNPM implements Callable<Integer> {
 	
-	private static JNPMSettings DEFAULT_SETTINGS = JNPMSettings.builder().build();
+	private static final JNPMSettings DEFAULT_SETTINGS = JNPMSettings.builder().build();
 	
 	@Option(names = "--home-dir", description = "Home directory for JNPM (default: ${DEFAULT-VALUE})")
 	private Path homeDirectory = DEFAULT_SETTINGS.getHomeDirectory();

@@ -4,6 +4,9 @@ import java.nio.file.Path;
 
 import org.orienteer.jnpm.traversal.TraversalTree;
 
+/**
+ * Set of built-in installation strategies
+ */
 public enum InstallationStrategy implements IInstallationStrategy{
 	FLAT {
 		@Override
@@ -14,7 +17,7 @@ public enum InstallationStrategy implements IInstallationStrategy{
 	NPM  {
 		@Override
 		public Path mapPath(Path rootPath, TraversalTree tree) {
-			TraversalTree path[] = tree.getPath();
+			TraversalTree[] path = tree.getPath();
 			Path ret = rootPath;
 			for (TraversalTree traversalTree : path) {
 				ret = ret.resolve("node_modules").resolve(traversalTree.getVersion().getName());

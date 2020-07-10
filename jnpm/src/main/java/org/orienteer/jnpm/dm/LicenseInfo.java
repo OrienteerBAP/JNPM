@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.Data;
 
+/**
+ * Data class to store license information
+ */
 @Data
 @JsonNaming
 public class LicenseInfo {

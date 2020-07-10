@@ -14,6 +14,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.ToString;
 
+/**
+ * Abstract data class to store common information for packages and their versions
+ */
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 @JsonIgnoreProperties

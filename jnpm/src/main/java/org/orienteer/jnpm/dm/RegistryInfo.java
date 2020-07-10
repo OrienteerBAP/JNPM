@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.Value;
 
+/**
+ * Data class to store information about NPM registry
+ */
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class RegistryInfo extends AbstractInfo {

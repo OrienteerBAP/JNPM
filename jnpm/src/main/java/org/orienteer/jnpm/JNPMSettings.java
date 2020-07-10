@@ -8,6 +8,9 @@ import java.nio.file.Paths;
 import lombok.Builder;
 import lombok.Value;
 
+/**
+ * Container for JNPM settings 
+ */
 @Builder
 @Value
 public class JNPMSettings {

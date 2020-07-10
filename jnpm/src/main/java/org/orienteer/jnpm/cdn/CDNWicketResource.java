@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.wicket.protocol.http.WebApplication;
@@ -12,13 +13,22 @@ import org.apache.wicket.request.Response;
 import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.apache.wicket.request.resource.AbstractResource;
+import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
 import org.apache.wicket.request.resource.SharedResourceReference;
 import org.apache.wicket.util.time.Time;
 import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
-public class CDNWicketResource extends AbstractResource implements CDNResolver {
+/**
+ * Wicket {@link IResource} to serve resources from NPM package. Format of the request: /cdn/&lt;package&gt;/&lt;file path&gt;
+ * For example:
+ * <ul>
+ * 	<li>/cdn/bootstrap/dist/css/bootstrap.min.css</li>
+ *  <li>/cdn/vue@~2.6.11/dist/vue.js</li>
+ * </ul>
+ */
+public class CDNWicketResource extends AbstractResource {
 	
 	public static final String DEFAULT_MOUNT = "/cdn/";
 	public static final String RESOURCE_KEY = CDNWicketResource.class.getSimpleName();
@@ -37,7 +47,7 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
             PageParameters params = attributes.getParameters();
             String pathInfo = getPathInfo(params);
             CDNRequest cdnRequest = CDNRequest.valueOf(pathInfo);
-            VersionInfo versionInfo = resolveVersion(cdnRequest);
+            VersionInfo versionInfo = cdnRequest.resolveVersion(versionsCache);
             if(versionInfo!=null) {
             	response.setContentType(JNPMUtils.fileNameToMimeType(cdnRequest.getFileName()));
             	response.setCacheDurationToMaximum();
@@ -46,7 +56,9 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
 					@Override
 					public void writeData(Attributes attributes) throws IOException {
 						try {
-							resolveRequest(versionInfo, cdnRequest.getPath(), attributes.getResponse().getOutputStream());
+							JNPMUtils.readTarball(versionInfo.getLocalTarball(), 
+													"/package/"+cdnRequest.getPath(), 
+													attributes.getResponse().getOutputStream());
 						} catch (FileNotFoundException e) {
 							Response response = attributes.getResponse();
 							if (response instanceof WebResponse)
@@ -74,11 +86,6 @@ public class CDNWicketResource extends AbstractResource implements CDNResolver {
         return sb.toString();
 	}
 
-	@Override
-	public Map<String, VersionInfo> getVersionsCache() {
-		return versionsCache;
-	}
-	
 	public static void mount(WebApplication app) {
 		mount(app, DEFAULT_MOUNT);
 	}

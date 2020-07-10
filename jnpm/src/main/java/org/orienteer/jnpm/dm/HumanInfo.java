@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.Data;
 
+/**
+ * Data class to store contract information
+ */
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class HumanInfo extends AbstractInfo {

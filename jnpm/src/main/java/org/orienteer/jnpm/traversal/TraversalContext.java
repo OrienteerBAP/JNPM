@@ -20,6 +20,9 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.AccessLevel;
 
+/**
+ * Root node for all traversal: direct childs represents sets of initial packages to be traversed
+ */
 @Value
 @Slf4j
 public class TraversalContext extends AbstractTraversalNode {

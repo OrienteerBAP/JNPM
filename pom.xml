@@ -220,6 +220,28 @@
     </pluginManagement>
     <plugins>
       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+              <configLocation>check_style.xml</configLocation>
+              <failOnViolation>true</failOnViolation>
+              <linkXRef>false</linkXRef>
+              <sourceDirectories>
+              	<sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
+              </sourceDirectories>
+          </configuration>
+          <executions>
+              <execution>
+                  <id>checkstyle</id>
+                  <phase>verify</phase>
+                  <goals>
+                      <goal>check</goal>
+                  </goals>
+              </execution>
+          </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>3.0.1</version>

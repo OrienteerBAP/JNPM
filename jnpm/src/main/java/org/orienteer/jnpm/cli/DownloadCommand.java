@@ -6,7 +6,6 @@ import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.RxJNPMService;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.traversal.ITraversalRule;
-import org.orienteer.jnpm.traversal.TraversalRule;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
@@ -18,6 +17,9 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParentCommand;
 
+/**
+ * Download command for JNPM CLI. Please read command description in corresponding annotation.
+ */
 @Command(name="download", aliases = "d", description = "Download packages into local cache")
 @Slf4j
 public class DownloadCommand implements Callable<Integer>{

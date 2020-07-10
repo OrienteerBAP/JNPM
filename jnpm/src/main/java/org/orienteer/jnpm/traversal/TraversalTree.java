@@ -25,6 +25,9 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
+/**
+ * Traversal node to represent particular package version in traversal results
+ */
 @Value
 @EqualsAndHashCode(of={"depender", "version"})
 public class TraversalTree extends AbstractTraversalNode {
@@ -79,7 +82,7 @@ public class TraversalTree extends AbstractTraversalNode {
 	public TraversalTree subTreeFor(VersionInfo version) {
 		TraversalTree ret = modifiableDependencies.get(version);
 		if(ret==null) {
-			ret = new TraversalTree(context, this, version, TraversalRule.DEPENDENCIES);
+			ret = new TraversalTree(context, this, version, ITraversalRule.DEPENDENCIES);
 		}
 		return ret;
 	}

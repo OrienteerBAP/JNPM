@@ -29,6 +29,10 @@ import retrofit2.http.Query;
 import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
+/**
+ * Set of asynchronous API to access NPM.
+ */
+@SuppressWarnings("checkstyle:typename")
 public interface RxJNPMService {
 
 	@GET("/")

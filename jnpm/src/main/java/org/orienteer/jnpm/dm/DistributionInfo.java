@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.Data;
 
+/**
+ * Data class to store package distribution information
+ */
 @Data
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class DistributionInfo extends AbstractInfo {

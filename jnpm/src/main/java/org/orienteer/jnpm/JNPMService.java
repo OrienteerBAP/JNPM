@@ -29,10 +29,13 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 import retrofit2.http.Query;
 
+/**
+ * Set of synchronous API to access NPM. Main entry for any code which use JNPM
+ */
 @Slf4j
 public class JNPMService 
 {
-	private static JNPMService INSTANCE;
+	private static JNPMService instance;
 	
 	private JNPMSettings settings;
 	private RxJNPMService rxService;
@@ -63,7 +66,7 @@ public class JNPMService
 	
 	public static JNPMService instance() {
 		if(!isConfigured()) throw new IllegalStateException("Configure JNPM instance first by calling JNPM.configure(settings)");
-		return INSTANCE;
+		return instance;
 	}
 	
 	/**
@@ -72,13 +75,13 @@ public class JNPMService
 	 * @return previous {@link JNPMService}
 	 */
 	static JNPMService instance(JNPMService substitution) {
-		JNPMService preserved = INSTANCE;
-		INSTANCE = substitution;
+		JNPMService preserved = instance;
+		instance = substitution;
 		return preserved;
 	}
 	
 	public static boolean isConfigured() {
-		return INSTANCE!=null;
+		return instance!=null;
 	}
 	
 	public static synchronized JNPMService configure(JNPMSettings settings) {
@@ -86,8 +89,8 @@ public class JNPMService
 		try {
 			settings.createAllDirectories();
 			log.info("Settings: "+settings);
-			INSTANCE = new JNPMService(settings);
-			return INSTANCE;
+			instance = new JNPMService(settings);
+			return instance;
 		} catch (Exception e) {
 			log.error("Can't configure JNPM due to problems with settings", e);
 			return null;

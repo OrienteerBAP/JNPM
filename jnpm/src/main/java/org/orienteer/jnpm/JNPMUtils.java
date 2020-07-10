@@ -23,6 +23,7 @@ import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.orienteer.jnpm.dm.VersionInfo;
 
 import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
@@ -30,10 +31,15 @@ import com.github.zafarkhaja.semver.expr.ExpressionParser;
 import com.github.zafarkhaja.semver.expr.MavenParser;
 import com.github.zafarkhaja.semver.util.UnexpectedElementException;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.experimental.UtilityClass;
 
-@Slf4j
+/**
+ * Utility class for JNPM functionality
+ */
 public final class JNPMUtils {
+	
+	private JNPMUtils() {
+	}
 	
 	private static class StringReplacer implements Function<String, String> {
 		private Pattern pattern;
@@ -56,7 +62,7 @@ public final class JNPMUtils {
 	private static class NameMatcher implements Predicate<ArchiveEntry> {
 		private Pattern pattern;
 		public NameMatcher(String regex) {
-			this.pattern = pattern.compile(regex);
+			this.pattern = Pattern.compile(regex);
 		}
 		
 		@Override
@@ -65,10 +71,12 @@ public final class JNPMUtils {
 		}
 	}
 	
-	private JNPMUtils() {
-		
-	}
-	
+	/**
+	 * Creates a function for replacement according to pattern
+	 * @param regexp pattern to be used for replacement
+	 * @param replacement actual replacament
+	 * @return function for performing strings replacements
+	 */
 	public static Function<String, String> stringReplacer(String regexp, String replacement) {
 		return new StringReplacer(regexp, replacement);
 	}
@@ -78,6 +86,11 @@ public final class JNPMUtils {
 		return new NameMatcher(regexp);
 	}
 	
+	/**
+	 * Convert version constraint to {@link Predicate}
+	 * @param versionConstraint - text representation of version constraint
+	 * @return null if version constraint is invalid or actual predicate
+	 */
 	public static Predicate<Version> toVersionPredicate(String versionConstraint) {
 		if(versionConstraint==null) return v->true;
 		Predicate<Version> res=null;
@@ -93,6 +106,25 @@ public final class JNPMUtils {
         return res;
 	}
 	
+	/**
+	 * Read file from tarball of a specific version and write it to provided {@link OutputStream}
+	 * @param version package version to be read
+	 * @param path path to be found in the tarball
+	 * @param out {@link OutputStream} to write to
+	 * @throws IOException if file can't be read
+	 */
+	public static void readTarball(VersionInfo version, String path, OutputStream out) throws IOException {
+		if(version!=null) readTarball(version.getLocalTarball(), path, out);
+		else throw new FileNotFoundException("VersionInfo was not found");
+	}
+	
+	/**
+	 * Read file from tarball and write it to provided {@link OutputStream}
+	 * @param tarball file to read
+	 * @param path path to be found in the tarball
+	 * @param out {@link OutputStream} to write to
+	 * @throws IOException if file can't be read
+	 */
 	public static void readTarball(File tarball, String path, OutputStream out) throws IOException {
 		if(tarball!=null && tarball.exists() && path!=null) {
 			try (InputStream fi = new FileInputStream(tarball);
@@ -113,14 +145,37 @@ public final class JNPMUtils {
 		throw new FileNotFoundException("Archived file '"+path+"' was not found in tarball "+tarball);
 	}
 	
+	/**
+	 * Extract content of tarball to specified directory
+	 * @param tarball file to extract
+	 * @param destinationDir destination directory
+	 * @param pathConverter converter of paths
+	 * @throws IOException if tarball can't be extracted for some reason
+	 */
 	public static void extractTarball(File tarball, Path destinationDir, Function<String, String> pathConverter) throws IOException {
 		extractTarball(tarball, destinationDir, (Predicate<ArchiveEntry>) null, pathConverter); 
 	}
 	
+	/**
+	 * Extract content of tarball to specified directory
+	 * @param tarball file to extract
+	 * @param destinationDir destination directory
+	 * @param filePattern pattern for files to be extracted
+	 * @param pathConverter converter of paths
+	 * @throws IOException if tarball can't be extracted for some reason
+	 */
 	public static void extractTarball(File tarball, Path destinationDir, String filePattern, Function<String, String> pathConverter) throws IOException {
 		extractTarball(tarball, destinationDir, newNameMatcher(filePattern), pathConverter); 
 	}
 	
+	/**
+	 * Extract content of tarball to specified directory
+	 * @param tarball file to extract
+	 * @param destinationDir destination directory
+	 * @param matcher predicate to determine which files should be extracted
+	 * @param pathConverter converter of paths
+	 * @throws IOException if tarball can't be extracted for some reason
+	 */
 	public static void extractTarball(File tarball, Path destinationDir, Predicate<ArchiveEntry> matcher, Function<String, String> pathConverter) throws IOException {
 		if(tarball==null || !tarball.exists()) 
 			throw new FileNotFoundException("Tarball was not found: "+tarball);
@@ -151,6 +206,12 @@ public final class JNPMUtils {
 			}
 	}
 	
+	/**
+	 * Method to simplify creation of maps
+	 * @param <K> type of keys and values for the map
+	 * @param items items which needs to packed into map
+	 * @return resultant map
+	 */
 	public static <K> Map<K, K> toMap(K... items) {
 		if(items.length % 2 !=0) throw new IllegalStateException("Expecting even number of arguments");
 		Map<K, K> map = new HashMap<>();
@@ -160,8 +221,13 @@ public final class JNPMUtils {
 		return map;
 	}
 	
-	private static final MimetypesFileTypeMap mimeTypeMap = new MimetypesFileTypeMap();
+	private static final MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
 	
+	/**
+	 * Suggest mime type according to filename
+	 * @param fileName
+	 * @return
+	 */
 	public static String fileNameToMimeType(String fileName) {
 		if(fileName==null) return null;
 		int indx = fileName.lastIndexOf('.');
@@ -180,6 +246,6 @@ public final class JNPMUtils {
 				return "text/html";
 			}
 		}
-		return mimeTypeMap.getContentType(fileName);
+		return MIME_TYPE_MAP.getContentType(fileName);
 	}
 }

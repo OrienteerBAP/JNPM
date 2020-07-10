@@ -16,7 +16,15 @@ import org.orienteer.jnpm.JNPMSettings;
 import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
-public class CDNServlet extends HttpServlet implements CDNResolver {
+/**
+ * {@link HttpServlet} to serve resources from NPM package. Format of the request: /cdn/&lt;package&gt;/&lt;file path&gt;
+ * For example:
+ * <ul>
+ * 	<li>/cdn/bootstrap/dist/css/bootstrap.min.css</li>
+ *  <li>/cdn/vue@~2.6.11/dist/vue.js</li>
+ * </ul>
+ */
+public class CDNServlet extends HttpServlet {
 	
 	private Map<String, VersionInfo> versionsCache = new HashMap<String, VersionInfo>();
 	
@@ -30,19 +38,16 @@ public class CDNServlet extends HttpServlet implements CDNResolver {
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//		req.getPathInfo().
 		try {
 			CDNRequest request = CDNRequest.valueOf(req.getPathInfo());
 			resp.setContentType(JNPMUtils.fileNameToMimeType(request.getFileName()));
 			resp.addHeader("Cache-Control", "public, max-age=604800, immutable");
-			resolveRequest(request, resp.getOutputStream());
+			JNPMUtils.readTarball(request.resolveVersion(versionsCache), 
+					"/package/"+request.getPath(), 
+					resp.getOutputStream());
 		} catch (IllegalArgumentException | FileNotFoundException e) {
 			resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource was not found for provided path '"+req.getPathInfo()+"'");
 		}
 	}
 
-	@Override
-	public Map<String, VersionInfo> getVersionsCache() {
-		return versionsCache;
-	}
 }

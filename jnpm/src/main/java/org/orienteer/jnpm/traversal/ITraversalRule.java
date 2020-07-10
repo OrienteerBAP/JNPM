@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.orienteer.jnpm.dm.VersionInfo;
 
+/**
+ * Rule which define which dependencies to traverse
+ */
 public interface ITraversalRule {
 
 	public static final ITraversalRule DEPENDENCIES = new TraversalRule("Dependencies", VersionInfo::getDependencies);
@@ -15,6 +19,34 @@ public interface ITraversalRule {
 	public static final ITraversalRule PEER_DEPENDENCIES = new TraversalRule("Peer Dependencies", VersionInfo::getPeerDependencies);
 	
 	public static final ITraversalRule NO_DEPENDENCIES = new TraversalRule("No Dependencies", v -> new HashMap<String, String>());
+	
+	/**
+	 * Function based implementation of ITraversalRule
+	 */
+	public static class TraversalRule implements ITraversalRule {
+		
+		private final String name;
+		private final Function<VersionInfo, Map<String, String>> extractor;
+		
+		public TraversalRule(String name, Function<VersionInfo, Map<String, String>> extractor) {
+			this.name = name;
+			this.extractor = extractor;
+		}
+		
+		@Override
+		public Map<String, String> getNextDependencies(VersionInfo version) {
+			if(version==null) return new HashMap<String, String>();
+			Map<String, String> ret = extractor.apply(version);
+			return ret!=null?ret:new HashMap<String, String>();
+		}
+		
+		@Override
+		public String toString() {
+			return "TraversalRule: "+name;
+		}
+		
+	}
+	
 	
 	public Map<String, String> getNextDependencies(VersionInfo version);
 	
@@ -39,6 +71,9 @@ public interface ITraversalRule {
 		return new CombinedRule(rules);
 	}
 	
+	/**
+	 * Utility {@link ITraversalRule} to allow combining multiple rules
+	 */
 	static class CombinedRule implements ITraversalRule {
 		
 		private ITraversalRule[] rules;

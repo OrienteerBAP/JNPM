@@ -15,6 +15,9 @@ import lombok.Getter;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
+/**
+ * Abstract class for traversal results: parent for {@link TraversalContext} (root) and {@link TraversalTree} (sub-trees to reflect dependencies)
+ */
 @Value
 @NonFinal
 public abstract class AbstractTraversalNode {
