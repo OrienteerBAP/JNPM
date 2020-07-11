@@ -67,7 +67,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <retrofit2.version>2.8.1</retrofit2.version>
+    <retrofit2.version>2.9.0</retrofit2.version>
     <maven.version>3.6.0</maven.version>
     <jetty.version>9.4.12.v20180830</jetty.version>
   </properties>

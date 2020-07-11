@@ -22,6 +22,7 @@ import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import okhttp3.ResponseBody;
+import retrofit2.HttpException;
 import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
@@ -39,11 +40,11 @@ public interface RxJNPMService {
 	public Single<RegistryInfo> getRegistryInfo();
 	
 	@GET("/{package}")
-	public Single<PackageInfo> getPackageInfo(@Path("package") String packageName);
+	public Maybe<PackageInfo> getPackageInfo(@Path("package") String packageName);
 	
 
 	@GET("/{package}/{version}")
-	public Single<VersionInfo> getVersionInfo(@Path("package") String packageName, @Path("version") String version);
+	public Maybe<VersionInfo> getVersionInfo(@Path("package") String packageName, @Path("version") String version);
 
 	@GET("/-/v1/search")
 	public Single<SearchResults> search(@Query("text") String text,
@@ -55,7 +56,7 @@ public interface RxJNPMService {
 	
 	@Streaming
     @GET
-    public Single<Response<ResponseBody>> downloadFile(@Url String fileUrl);
+    public Maybe<Response<ResponseBody>> downloadFile(@Url String fileUrl);
 	
 	public default Single<SearchResults> search(String text, Integer size, Integer from) {
 		return search(text, size, from, null, null, null);

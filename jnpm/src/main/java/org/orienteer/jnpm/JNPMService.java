@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import org.orienteer.jnpm.JNPMCallAdapter.JNPMCallAdapterFactory;
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
@@ -59,7 +60,9 @@ public class JNPMService
 			    .baseUrl(settings.getRegistryUrl())
 			    .client(client)
 			    .addConverterFactory(JacksonConverterFactory.create(mapper))
-			    .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
+			    .addCallAdapterFactory(JNPMCallAdapterFactory
+			    						.create(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io())))
+//			    .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
 			    .build();
 		rxService = retrofit.create(RxJNPMService.class);
 	}

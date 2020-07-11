@@ -76,6 +76,18 @@ public class JNPMTest
     }
     
     @Test
+    public void nonExistingPackageInfoRetrival() throws IOException {
+    	PackageInfo packageInfo = JNPMService.instance()
+    								.getPackageInfo("nosuchpackage");
+    	assertTrue(packageInfo==null);
+    	VersionInfo version = JNPMService.instance().getVersionInfo("nosuchpackage", "1.0");
+    	assertTrue(version==null);
+    	//Check for existing package but not existing version
+    	version = JNPMService.instance().getVersionInfo("vue", "0.0.1");
+    	assertTrue(version==null);
+    }
+    
+    @Test
     public void versionInforetrival() throws IOException {
     	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
     	assertNotNull(versionInfo);
