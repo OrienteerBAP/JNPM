@@ -26,8 +26,8 @@
 	<url>https://github.com/OrienteerBAP/JNPM</url>
 	<scm>
 	    <url>https://github.com/OrienteerBAP/JNPM</url>
-	    <connection>scm:git:ssh://git@github.com:OrienteerBAP/JNPM.git</connection>
-	    <developerConnection>scm:git:ssh://git@github.com:OrienteerBAP/JNPM.git</developerConnection>
+	    <connection>scm:git:ssh://git@github.com/OrienteerBAP/JNPM.git</connection>
+	    <developerConnection>scm:git:ssh://git@github.com/OrienteerBAP/JNPM.git</developerConnection>
 	    <tag>HEAD</tag>
 	</scm>
 
