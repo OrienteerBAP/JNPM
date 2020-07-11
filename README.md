@@ -4,7 +4,7 @@ Native Java API to work with JavaScript Node Package Manager (NPM): query, retri
 
 1. [Java API](#java-api)
 2. [Command Line Interface](#command-line-interface)
-3. [Maven Plugin](#maven-plugin) (very lightweight and fast replacement for [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin))
+3. [Maven Plugin](#maven-plugin) (lightweight and fast replacement for [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin), [npm-maven-plugin](https://github.com/jy4618272/npm-maven-plugin) and even [WebJars](https://www.webjars.org/))
 4. [Make your CDN](#cdn)
 	* [Servlet](#servlet)
 	* [Apache Wicket](#apache-wicket)
