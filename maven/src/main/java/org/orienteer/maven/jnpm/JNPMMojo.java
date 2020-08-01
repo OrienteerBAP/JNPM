@@ -47,6 +47,12 @@ public class JNPMMojo
     private File outputDirectory;
 	
 	/**
+     * Prefix for the directory under outputDirectory to which files will be placed
+     */
+	@Parameter
+	private String pathPrefix;
+	
+	/**
 	 * NPM packages to be downloaded and extracted (For example: vue@2.6.11)
 	 */
 	@Parameter(required = true)
@@ -112,6 +118,17 @@ public class JNPMMojo
     	getLog().info("Output directory: "+outputDirectory);
     	getLog().info("Packages for installation: "+String.join(", ", packages));
     	getLog().info("Strategy for installation: "+strategy);
+    	
+    	final Path outputDirectoryPath = outputDirectory.toPath();
+    	final Path targetPath;
+    	if(pathPrefix!=null && pathPrefix.trim().length()>0) {
+    		targetPath = outputDirectoryPath.resolve(pathPrefix);
+    		if(!targetPath.toAbsolutePath().startsWith(outputDirectoryPath.toAbsolutePath()))
+    			throw new MojoExecutionException("'pathPrefix' should point to subdirectory");
+    		getLog().info("Target directory for extract: "+targetPath);
+    	} else {
+    		targetPath = outputDirectoryPath;
+    	}
     	if(!JNPMService.isConfigured())
     		JNPMService.configure(JNPMSettings.builder().build());
     	RxJNPMService rxService = JNPMService.instance().getRxService();
@@ -119,7 +136,7 @@ public class JNPMMojo
     	ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
     	Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packages)
 				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
-		observable.flatMapCompletable(t -> t.install(outputDirectory.toPath(), strategy)).blockingAwait();
+		observable.flatMapCompletable(t -> t.install(targetPath, strategy)).blockingAwait();
 		if(attachResources) projectHelper.addResource(project, outputDirectory.getAbsolutePath(), includes, excludes);
     }
 }

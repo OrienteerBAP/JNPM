@@ -189,6 +189,10 @@ jnpm:install
       Required: true
       NPM packages to be downloaded and extracted (For example: vue@2.6.11)
 
+    pathPrefix
+      Prefix for the directory under outputDirectory to which files will be
+      placed
+      
     strategy (Default: WEBJARS)
       Installation strategy to be used
 ```
