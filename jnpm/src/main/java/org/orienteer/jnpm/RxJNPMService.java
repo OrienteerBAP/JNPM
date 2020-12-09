@@ -16,7 +16,8 @@ import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 import org.slf4j.Logger;
 
-import com.github.zafarkhaja.semver.Version;
+import com.vdurmont.semver4j.Requirement;
+import com.vdurmont.semver4j.Semver;
 
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
@@ -71,7 +72,7 @@ public interface RxJNPMService {
 	}
 	
 	public default Observable<VersionInfo> retrieveVersions(String packageName, String versionConstraint) {
-    	final Predicate<Version> res=JNPMUtils.toVersionPredicate(versionConstraint);
+    	final Requirement res = JNPMUtils.toVersionPredicate(versionConstraint);
         if(res!=null) {
         	return getPackageInfo(packageName)
     						.flatMapObservable(p -> Observable.fromIterable(p.getVersions().values()))

@@ -22,8 +22,10 @@ import org.orienteer.jnpm.traversal.TraverseDirection;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.github.zafarkhaja.semver.ParseException;
-import com.github.zafarkhaja.semver.Version;
+import com.vdurmont.semver4j.Requirement;
+import com.vdurmont.semver4j.Semver;
+import com.vdurmont.semver4j.Semver.SemverType;
+import com.vdurmont.semver4j.SemverException;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -42,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 public class VersionInfo extends AbstractArtifactInfo implements Comparable<VersionInfo>{
 	
 	@JsonIgnore
-	private Version version;
+	private Semver version;
 	@ToString.Include private String versionAsString;
 	private String main;
 	private Map<String, String> scripts;
@@ -146,9 +148,9 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	@JsonProperty("version")
 	public void setVersionAsString(String version) {
 		try {
-			this.version = Version.valueOf(version);
+			this.version = new Semver(version, SemverType.NPM);
 			this.versionAsString = null;
-		} catch (ParseException e) {
+		} catch (SemverException e) {
 			this.version = null;
 			this.versionAsString = version;
 		}
@@ -162,8 +164,8 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 		return version!=null && version.satisfies(expression);
 	}
 	
-	public boolean satisfies(Predicate<Version> predicate) {
-		return version!=null && predicate.test(version);
+	public boolean satisfies(Requirement requirement) {
+		return version!=null && version.satisfies(requirement);
 	}
 	
 	public Observable<VersionInfo> getDependencies(ITraversalRule rule) {
@@ -175,8 +177,8 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 
 	@Override
 	public int compareTo(VersionInfo o) {
-		Version version = getVersion();
-		Version thatVersion = o.getVersion();
+		Semver version = getVersion();
+		Semver thatVersion = o.getVersion();
 		if(version!=null && thatVersion!=null) return version.compareTo(thatVersion);
 		else return getVersionAsString().compareTo(o.getVersionAsString());
 	}

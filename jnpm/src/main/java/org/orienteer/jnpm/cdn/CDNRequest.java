@@ -8,7 +8,9 @@ import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
-import com.github.zafarkhaja.semver.Version;
+import com.vdurmont.semver4j.Semver;
+import com.vdurmont.semver4j.Semver.SemverType;
+import com.vdurmont.semver4j.SemverException;
 
 import lombok.Value;
 import lombok.experimental.NonFinal;
@@ -43,7 +45,7 @@ public class CDNRequest {
 	
 	public boolean isExactVersion() {
 		if(exactVersion==null) {
-			exactVersion = Version.isValid(versionExpression);
+			exactVersion = JNPMUtils.isValidVersion(versionExpression);
 		}
 		return exactVersion;
 	}

@@ -16,7 +16,6 @@ import org.orienteer.jnpm.dm.search.SearchResults;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.zafarkhaja.semver.Version;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;

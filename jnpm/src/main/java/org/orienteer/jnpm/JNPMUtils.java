@@ -25,11 +25,10 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
-import com.github.zafarkhaja.semver.ParseException;
-import com.github.zafarkhaja.semver.Version;
-import com.github.zafarkhaja.semver.expr.ExpressionParser;
-import com.github.zafarkhaja.semver.expr.MavenParser;
-import com.github.zafarkhaja.semver.util.UnexpectedElementException;
+import com.vdurmont.semver4j.Requirement;
+import com.vdurmont.semver4j.Semver;
+import com.vdurmont.semver4j.SemverException;
+import com.vdurmont.semver4j.Semver.SemverType;
 
 import lombok.experimental.UtilityClass;
 
@@ -87,23 +86,16 @@ public final class JNPMUtils {
 	}
 	
 	/**
-	 * Convert version constraint to {@link Predicate}
+	 * Convert version constraint to {@link Requirement}
 	 * @param versionConstraint - text representation of version constraint
 	 * @return null if version constraint is invalid or actual predicate
 	 */
-	public static Predicate<Version> toVersionPredicate(String versionConstraint) {
-		if(versionConstraint==null) return v->true;
-		Predicate<Version> res=null;
-        try {
-            res = ExpressionParser.newInstance().parse(versionConstraint);
-        } catch (ParseException | UnexpectedElementException e) {
-            try {
-                res = new MavenParser().parse(versionConstraint);
-            } catch (ParseException | UnexpectedElementException e2) {
-                //NOP
-            }
-        }
-        return res;
+	public static Requirement toVersionPredicate(final String versionConstraint) {
+		try {
+			return Requirement.buildNPM(versionConstraint);
+		} catch (SemverException e) {
+			return null;
+		}
 	}
 	
 	/**
@@ -247,5 +239,14 @@ public final class JNPMUtils {
 			}
 		}
 		return MIME_TYPE_MAP.getContentType(fileName);
+	}
+	
+	public static boolean isValidVersion(String versionExpression) {
+		try {
+			new Semver(versionExpression, SemverType.NPM);
+			return true;
+		} catch (SemverException e) {
+			return false;
+		}
 	}
 }
