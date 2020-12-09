@@ -1,7 +1,6 @@
 package org.orienteer.jnpm.dm.search;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.orienteer.jnpm.dm.AbstractArtifactInfo;

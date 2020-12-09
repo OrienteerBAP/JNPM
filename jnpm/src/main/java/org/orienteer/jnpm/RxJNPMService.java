@@ -2,28 +2,24 @@ package org.orienteer.jnpm;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
 
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
+import org.orienteer.jnpm.traversal.AbstractTraversalNode;
 import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.TraversalContext;
-import org.orienteer.jnpm.traversal.AbstractTraversalNode;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 import org.slf4j.Logger;
 
 import com.vdurmont.semver4j.Requirement;
-import com.vdurmont.semver4j.Semver;
 
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import okhttp3.ResponseBody;
-import retrofit2.HttpException;
 import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.Path;

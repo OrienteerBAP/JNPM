@@ -2,17 +2,12 @@ package org.orienteer.jnpm.traversal;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
 
 import org.orienteer.jnpm.IInstallationStrategy;
-import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
@@ -21,7 +16,6 @@ import io.reactivex.Observable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 

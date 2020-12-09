@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,10 +26,8 @@ import org.orienteer.jnpm.dm.VersionInfo;
 
 import com.vdurmont.semver4j.Requirement;
 import com.vdurmont.semver4j.Semver;
-import com.vdurmont.semver4j.SemverException;
 import com.vdurmont.semver4j.Semver.SemverType;
-
-import lombok.experimental.UtilityClass;
+import com.vdurmont.semver4j.SemverException;
 
 /**
  * Utility class for JNPM functionality
@@ -217,8 +214,8 @@ public final class JNPMUtils {
 	
 	/**
 	 * Suggest mime type according to filename
-	 * @param fileName
-	 * @return
+	 * @param fileName name of a file to analize
+	 * @return mime type or null of type can't be recognized
 	 */
 	public static String fileNameToMimeType(String fileName) {
 		if(fileName==null) return null;
@@ -241,6 +238,11 @@ public final class JNPMUtils {
 		return MIME_TYPE_MAP.getContentType(fileName);
 	}
 	
+	/**
+	 * Check version expression for validity
+	 * @param versionExpression version expression to be checked
+	 * @return true - if Semver can be create from specified version
+	 */
 	public static boolean isValidVersion(String versionExpression) {
 		try {
 			new Semver(versionExpression, SemverType.NPM);

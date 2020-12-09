@@ -4,7 +4,6 @@ import java.util.concurrent.Callable;
 
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.RxJNPMService;
-import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;

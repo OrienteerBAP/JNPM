@@ -2,7 +2,6 @@ package org.orienteer.jnpm.cli;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
 
 import org.orienteer.jnpm.InstallationStrategy;
 import org.orienteer.jnpm.JNPMService;
@@ -12,7 +11,6 @@ import io.reactivex.Completable;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 /**
  * Extract command for JNPM CLI. Please read command description in corresponding annotation.

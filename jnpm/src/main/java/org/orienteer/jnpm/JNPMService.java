@@ -1,11 +1,8 @@
 package org.orienteer.jnpm;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 import org.orienteer.jnpm.JNPMCallAdapter.JNPMCallAdapterFactory;
 import org.orienteer.jnpm.dm.PackageInfo;
@@ -14,11 +11,8 @@ import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.dm.search.SearchResults;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
@@ -27,7 +21,6 @@ import okhttp3.Protocol;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
-import retrofit2.http.Query;
 
 /**
  * Set of synchronous API to access NPM. Main entry for any code which use JNPM

@@ -1,8 +1,6 @@
 package org.orienteer.jnpm.traversal;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,15 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.slf4j.Logger;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import lombok.AccessLevel;
 
 /**
  * Root node for all traversal: direct childs represents sets of initial packages to be traversed

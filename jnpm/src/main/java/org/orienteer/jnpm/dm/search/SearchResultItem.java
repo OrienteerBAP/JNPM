@@ -1,7 +1,5 @@
 package org.orienteer.jnpm.dm.search;
 
-import java.util.Date;
-
 import org.orienteer.jnpm.dm.AbstractInfo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
