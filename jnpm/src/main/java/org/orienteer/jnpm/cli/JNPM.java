@@ -6,7 +6,6 @@ import java.util.concurrent.Callable;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.JNPMSettings;
 
-import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -17,7 +16,6 @@ import picocli.CommandLine.Option;
 @Command(name = "jnpm", mixinStandardHelpOptions = true, 
 description = "Java implementation of Node Package Manager",
 subcommands = {DownloadCommand.class, ExtractCommand.class})
-@Slf4j
 public class JNPM implements Callable<Integer> {
 	
 	private static final JNPMSettings DEFAULT_SETTINGS = JNPMSettings.builder().build();

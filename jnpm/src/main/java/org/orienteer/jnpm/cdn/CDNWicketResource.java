@@ -16,8 +16,13 @@ import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
 import org.apache.wicket.request.resource.SharedResourceReference;
 import org.apache.wicket.util.time.Time;
+import org.orienteer.jnpm.ILogger;
+import org.orienteer.jnpm.JNPMService;
+import org.orienteer.jnpm.JNPMSettings;
 import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Wicket {@link IResource} to serve resources from NPM package. Format of the request: /cdn/&lt;package&gt;/&lt;file path&gt;
@@ -27,14 +32,28 @@ import org.orienteer.jnpm.dm.VersionInfo;
  *  <li>/cdn/vue@~2.6.11/dist/vue.js</li>
  * </ul>
  */
+@Slf4j
 public class CDNWicketResource extends AbstractResource {
 	
+	private static final long serialVersionUID = 1L;
 	public static final String DEFAULT_MOUNT = "/cdn/";
 	public static final String RESOURCE_KEY = CDNWicketResource.class.getSimpleName();
 	public static final ResourceReference SHARED_RESOURCE = new SharedResourceReference(RESOURCE_KEY);
 	
 	//For cache purposes: allow to get from browser cache unless server restarted
 	private static final Time INIT_TIME = Time.now();
+	public static final ILogger LOGGER = new ILogger() {
+		
+		@Override
+		public void log(String message, Throwable exc) {
+			log.error(message, exc);
+		}
+		
+		@Override
+		public void log(String message) {
+			log.info(message);
+		}
+	};
 
 	private Map<String, VersionInfo> versionsCache = new HashMap<String, VersionInfo>();
 	
@@ -92,6 +111,8 @@ public class CDNWicketResource extends AbstractResource {
 	public static void mount(WebApplication app, String path) {
 		app.getSharedResources().add(RESOURCE_KEY, new CDNWicketResource());
 		app.mountResource(path, SHARED_RESOURCE);
+		if(!JNPMService.isConfigured()) 
+			JNPMService.configure(JNPMSettings.builder().logger(LOGGER).build());
 	}
 	
 	public static void unmount(WebApplication app) {

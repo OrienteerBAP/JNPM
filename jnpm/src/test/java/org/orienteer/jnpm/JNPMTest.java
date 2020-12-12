@@ -50,7 +50,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Unit test for simple App.
  */
-@Slf4j
 public class JNPMTest 
 {
 	
@@ -98,7 +97,7 @@ public class JNPMTest
     	assertEquals("vue-2.6.11.tgz", versionInfo.getDist().getTarballName());
     	assertNotNull(versionInfo.getScripts());
     	assertTrue(!versionInfo.getScripts().isEmpty());
-    	log.info("Details: "+versionInfo.getDetails());
+    	ILogger.getLogger().log("Details: "+versionInfo.getDetails());
     	assertNotNull(versionInfo.getDevDependencies());
     	assertTrue(!versionInfo.getDevDependencies().isEmpty());
     }
@@ -139,7 +138,7 @@ public class JNPMTest
     	assertNotNull(versionInfo);
     	File localFile = versionInfo.getLocalTarball();
     	if(localFile.exists()) localFile.delete();
-    	log.info("version = "+versionInfo);
+    	ILogger.getLogger().log("version = "+versionInfo);
     	versionInfo.download(DEPENDENCIES, DEV_DEPENDENCIES).blockingAwait();
     	assertTrue(localFile.exists());
     }
@@ -182,7 +181,7 @@ public class JNPMTest
 			Observable<TraversalTree> traversal = JNPMService.instance().getRxService()
 					.traverse(TraverseDirection.WIDER,
 							  DEPENDENCIES, a); 
-			TestObserver<TraversalTree> test = traversal.doOnNext(t->log.info("Traverse"+t)).test();
+			TestObserver<TraversalTree> test = traversal.doOnNext(t->ILogger.getLogger().log("Traverse"+t)).test();
 			test.await(5, TimeUnit.SECONDS);
 			test.assertComplete();
 			List<TraversalTree> trace = test.values();
@@ -233,12 +232,13 @@ public class JNPMTest
 									    		.traverse(TraverseDirection.WIDER,
 									    				  ITraversalRule.combine(DEPENDENCIES, DEV_DEPENDENCIES), 
 									    				  "a@2.1.2", "b@2.0.1", "c@1.0.0", "d@1.0.1");
-    	TestObserver<TraversalContext> test = traversal.doOnNext(t -> log.info("Traverse: "+t))
+    	ILogger log = ILogger.getLogger();
+    	TestObserver<TraversalContext> test = traversal.doOnNext(t -> log.log("Traverse: "+t))
 								     			.lastElement()
 								    			.map(TraversalTree::getContext)
-								    			.doOnSuccess(ctx -> log.info("Retrieved: "+ctx.getTraversed().size()))
-								    			.doOnComplete(() -> log.info("Completed"))
-								    			.doOnError(t -> log.error("Error accured", t))
+								    			.doOnSuccess(ctx -> log.log("Retrieved: "+ctx.getTraversed().size()))
+								    			.doOnComplete(() -> log.log("Completed"))
+								    			.doOnError(t -> log.log("Error accured", t))
 								    			.test();
     	List<TraversalContext> ctxs = test.awaitDone(60, TimeUnit.SECONDS)
 				.values();

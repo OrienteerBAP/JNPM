@@ -25,6 +25,7 @@ import org.orienteer.jnpm.dm.VersionInfo;
  */
 public class CDNServlet extends HttpServlet {
 	
+	private static final long serialVersionUID = 1L;
 	private Map<String, VersionInfo> versionsCache = new HashMap<String, VersionInfo>();
 	
 	@Override

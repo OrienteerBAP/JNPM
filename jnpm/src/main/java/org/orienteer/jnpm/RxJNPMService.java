@@ -12,7 +12,6 @@ import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.TraversalContext;
 import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
-import org.slf4j.Logger;
 
 import com.vdurmont.semver4j.Requirement;
 
@@ -114,8 +113,6 @@ public interface RxJNPMService {
 	public default Observable<TraversalTree> traverse(AbstractTraversalNode node, boolean doForThis) {
 		TraversalContext ctx = node.getContext();
 		return Observable.defer(() -> {
-			Logger log = ctx.getLogger();
-//			log.info("Package: "+version.getName()+"@"+version.getVersionAsString());
 			
 			List<Observable<TraversalTree>>  setToDo = new ArrayList<>();
 			if(doForThis && node instanceof TraversalTree) 

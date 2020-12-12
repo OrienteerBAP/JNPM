@@ -10,6 +10,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.orienteer.jnpm.IInstallationStrategy;
+import org.orienteer.jnpm.ILogger;
 import org.orienteer.jnpm.InstallationStrategy;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.JNPMSettings;
@@ -130,13 +131,28 @@ public class JNPMMojo
     		targetPath = outputDirectoryPath;
     	}
     	if(!JNPMService.isConfigured())
-    		JNPMService.configure(JNPMSettings.builder().build());
+    		JNPMService.configure(prepareSettingsBuilder().build());
     	RxJNPMService rxService = JNPMService.instance().getRxService();
     	getLog().info("Prod="+getProd+" dev="+getDev+" optional="+getOptional+" peer="+getPeer);
     	ITraversalRule rule = ITraversalRule.getRuleFor(getProd, getDev, getOptional, getPeer);
     	Observable<TraversalTree> observable = rxService.traverse(TraverseDirection.WIDER, rule, packages)
-				.doOnNext(t->System.out.printf("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString()));
+				.doOnNext(t->ILogger.getLogger().log(String.format("Downloading %s@%s\n", t.getVersion().getName(), t.getVersion().getVersionAsString())));
 		observable.flatMapCompletable(t -> t.install(targetPath, strategy)).blockingAwait();
 		if(attachResources) projectHelper.addResource(project, outputDirectory.getAbsolutePath(), includes, excludes);
+    }
+    
+    protected JNPMSettings.JNPMSettingsBuilder prepareSettingsBuilder() {
+    	return JNPMSettings.builder()
+    					   .logger(new ILogger() {
+								@Override
+								public void log(String message, Throwable exc) {
+									getLog().error(message, exc);
+								}
+								
+								@Override
+								public void log(String message) {
+									getLog().info(message);
+								}
+							});
     }
 }

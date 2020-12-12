@@ -15,12 +15,14 @@ public class CDNTestApplication extends WebApplication {
 	@Override
 	protected void init() {
 		super.init();
-		if(!JNPMService.isConfigured()) 
-			JNPMService.configure(JNPMSettings.builder().build());
 		CDNWicketResource.mount(this, "/wicketcdn");
 		mountPage("/servletPage", CDNTestServletPage.class);
 		mountPage("/wicketPage", CDNTestWicketPage.class);
 		getMarkupSettings().setStripWicketTags(true);
+		//Service initiazation is part of CDNWicketResource, so this is not needed for Wicket
+		//But if Servlet is being used - JNPMService should be configured somewhere
+		if(!JNPMService.isConfigured()) 
+			JNPMService.configure(JNPMSettings.builder().logger(CDNWicketResource.LOGGER).build());
 	}
 
 }

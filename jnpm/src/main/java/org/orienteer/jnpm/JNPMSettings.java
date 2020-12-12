@@ -18,6 +18,7 @@ public class JNPMSettings {
 	@Builder.Default private String registryUrl = "http://registry.npmjs.org/";
 	@Builder.Default private Path homeDirectory = Paths.get(System.getProperty("user.home"), ".jnpm");
 	@Builder.Default private boolean validateSignature = true;
+	@Builder.Default private ILogger logger = ILogger.DEFAULT;
 	private Path downloadDirectory;
 	private Path installDirectory;
 	

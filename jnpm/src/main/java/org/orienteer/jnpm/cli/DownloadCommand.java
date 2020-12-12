@@ -10,7 +10,6 @@ import org.orienteer.jnpm.traversal.TraverseDirection;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -20,7 +19,6 @@ import picocli.CommandLine.ParentCommand;
  * Download command for JNPM CLI. Please read command description in corresponding annotation.
  */
 @Command(name="download", aliases = "d", description = "Download packages into local cache")
-@Slf4j
 public class DownloadCommand implements Callable<Integer>{
 	
 	protected String handledFormat = "Downloading %s@%s\n";

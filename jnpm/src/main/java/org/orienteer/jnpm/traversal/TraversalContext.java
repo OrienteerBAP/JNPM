@@ -6,19 +6,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.orienteer.jnpm.dm.VersionInfo;
-import org.slf4j.Logger;
 
 import io.reactivex.Observable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Root node for all traversal: direct childs represents sets of initial packages to be traversed
  */
 @Value
-@Slf4j
 public class TraversalContext extends AbstractTraversalNode {
 	private TraverseDirection direction;
 	
@@ -45,10 +42,6 @@ public class TraversalContext extends AbstractTraversalNode {
 	
 	public Set<VersionInfo> getTraversed() {
 		return Collections.unmodifiableSet(traversed.keySet());
-	}
-	
-	public Logger getLogger() {
-		return log;
 	}
 	
 	@Override

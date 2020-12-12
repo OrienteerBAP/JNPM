@@ -25,7 +25,6 @@ import retrofit2.converter.jackson.JacksonConverterFactory;
 /**
  * Set of synchronous API to access NPM. Main entry for any code which use JNPM
  */
-@Slf4j
 public class JNPMService 
 {
 	private static JNPMService instance;
@@ -83,11 +82,11 @@ public class JNPMService
 		if(isConfigured()) throw new IllegalStateException("You can't configure JNPM twise: it's already initiated");
 		try {
 			settings.createAllDirectories();
-			log.info("Settings: "+settings);
+			settings.getLogger().log("Settings: "+settings);
 			instance = new JNPMService(settings);
 			return instance;
 		} catch (Exception e) {
-			log.error("Can't configure JNPM due to problems with settings", e);
+			settings.getLogger().log("Can't configure JNPM due to problems with settings", e);
 			return null;
 		}
 	}

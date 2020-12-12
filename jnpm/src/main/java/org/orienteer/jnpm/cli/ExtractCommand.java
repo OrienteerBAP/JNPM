@@ -8,7 +8,6 @@ import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.traversal.TraversalTree;
 
 import io.reactivex.Completable;
-import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -16,7 +15,6 @@ import picocli.CommandLine.Option;
  * Extract command for JNPM CLI. Please read command description in corresponding annotation.
  */
 @Command(name="extract", aliases = "e", description = "Extract packages: very similiar to 'npm install', but without changing package.json modification")
-@Slf4j
 public class ExtractCommand extends DownloadCommand {
 
 	@Option(names = "-g", description = "Extract package(s) globally")
