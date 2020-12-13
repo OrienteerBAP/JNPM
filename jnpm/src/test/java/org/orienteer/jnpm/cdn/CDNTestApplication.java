@@ -15,7 +15,7 @@ public class CDNTestApplication extends WebApplication {
 	@Override
 	protected void init() {
 		super.init();
-		CDNWicketResource.mount(this, "/wicketcdn");
+		CDNWicketResource.mount(this, "/wicketcdn", null);
 		mountPage("/servletPage", CDNTestServletPage.class);
 		mountPage("/wicketPage", CDNTestWicketPage.class);
 		getMarkupSettings().setStripWicketTags(true);

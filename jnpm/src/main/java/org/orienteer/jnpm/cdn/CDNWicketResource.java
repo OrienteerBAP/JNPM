@@ -105,14 +105,17 @@ public class CDNWicketResource extends AbstractResource {
 	}
 
 	public static void mount(WebApplication app) {
-		mount(app, DEFAULT_MOUNT);
+		mount(app, DEFAULT_MOUNT, null);
 	}
 	
-	public static void mount(WebApplication app, String path) {
+	public static void mount(WebApplication app, String path, JNPMSettings settings) {
 		app.getSharedResources().add(RESOURCE_KEY, new CDNWicketResource());
 		app.mountResource(path, SHARED_RESOURCE);
-		if(!JNPMService.isConfigured()) 
-			JNPMService.configure(JNPMSettings.builder().logger(LOGGER).build());
+		if(!JNPMService.isConfigured()) {
+			JNPMSettings.JNPMSettingsBuilder builder = settings!=null?settings.toBuilder():JNPMSettings.builder();
+			if(settings==null || settings.getLogger().equals(ILogger.DEFAULT)) builder.logger(LOGGER);
+			JNPMService.configure(builder.build());
+		}
 	}
 	
 	public static void unmount(WebApplication app) {

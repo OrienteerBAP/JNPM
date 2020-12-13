@@ -2,14 +2,17 @@ package org.orienteer.jnpm.cdn;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.wicket.util.string.Strings;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.JNPMSettings;
 import org.orienteer.jnpm.JNPMUtils;
@@ -31,8 +34,22 @@ public class CDNServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		if(!JNPMService.isConfigured()) {
-			//TODO: Enhance by other init params
-			JNPMService.configure(JNPMSettings.builder().build());
+			JNPMSettings.JNPMSettingsBuilder builder = JNPMSettings.builder();
+			ServletConfig cfg = getServletConfig();
+			
+			String registryUrl = cfg.getInitParameter("registryUrl");
+			if(!Strings.isEmpty(registryUrl)) builder.registryUrl(registryUrl);
+			
+			String homeDirectory = cfg.getInitParameter("homeDirectory");
+			if(!Strings.isEmpty(homeDirectory)) builder.homeDirectory(Paths.get(homeDirectory));
+			
+			String downloadDirectory = cfg.getInitParameter("downloadDirectory");
+			if(!Strings.isEmpty(downloadDirectory)) builder.downloadDirectory(Paths.get(downloadDirectory));
+			
+			String installDirectory = cfg.getInitParameter("installDirectory");
+			if(!Strings.isEmpty(installDirectory)) builder.installDirectory(Paths.get(installDirectory));
+			
+			JNPMService.configure(builder.build());
 		}
 	}
 	

@@ -107,6 +107,9 @@ public class JNPMMojo
 	@Parameter
     private List<String> excludes;
 	
+	@Parameter(defaultValue = JNPMSettings.DEFAULT_REGISTRY_URL)
+	private String registryUrl;
+	
 	@Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 	
@@ -143,6 +146,7 @@ public class JNPMMojo
     
     protected JNPMSettings.JNPMSettingsBuilder prepareSettingsBuilder() {
     	return JNPMSettings.builder()
+    					   .registryUrl(registryUrl)
     					   .logger(new ILogger() {
 								@Override
 								public void log(String message, Throwable exc) {

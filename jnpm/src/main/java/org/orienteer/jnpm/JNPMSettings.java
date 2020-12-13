@@ -11,11 +11,13 @@ import lombok.Value;
 /**
  * Container for JNPM settings 
  */
-@Builder
+@Builder(toBuilder = true)
 @Value
 public class JNPMSettings {
 	
-	@Builder.Default private String registryUrl = "http://registry.npmjs.org/";
+	public static final String DEFAULT_REGISTRY_URL = "http://registry.npmjs.org/";
+	
+	@Builder.Default private String registryUrl = DEFAULT_REGISTRY_URL;
 	@Builder.Default private Path homeDirectory = Paths.get(System.getProperty("user.home"), ".jnpm");
 	@Builder.Default private boolean validateSignature = true;
 	@Builder.Default private ILogger logger = ILogger.DEFAULT;

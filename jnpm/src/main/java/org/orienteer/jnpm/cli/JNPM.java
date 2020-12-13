@@ -1,5 +1,6 @@
 package org.orienteer.jnpm.cli;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
@@ -29,6 +30,9 @@ public class JNPM implements Callable<Integer> {
 	@Option(names = "--install-dir", description = "Global install directory for JNPM (default: <home-dir>/node_modules/)")
 	private Path installDirectory;
 	
+	@Option(names = "--registry", description = "NPM registry URL to be used for package lookup and retrieval (default: "+JNPMSettings.DEFAULT_REGISTRY_URL+")")
+	private URL registryUrl;
+	
 	public static void main(String... args) {
 		CommandLine top = new CommandLine(new JNPM());
 		int exitCode = top.execute(args);
@@ -39,6 +43,7 @@ public class JNPM implements Callable<Integer> {
 		JNPMSettings.JNPMSettingsBuilder builder = JNPMSettings.builder();
 		builder.homeDirectory(homeDirectory);
 		if(downloadDirectory!=null) builder.downloadDirectory(downloadDirectory);
+		if(registryUrl!=null) builder.registryUrl(registryUrl.toString());
 		JNPMService.configure(builder.build());
 	}
 
