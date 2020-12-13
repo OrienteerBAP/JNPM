@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/OrienteerBAP/JNPM.svg?branch=master)](https://travis-ci.org/OrienteerBAP/JNPM) [![javadoc](https://javadoc.io/badge2/org.orienteer.jnpm/jnpm/javadoc.svg)](https://javadoc.io/doc/org.orienteer.jnpm/jnpm)
+
 # JNPM
 
 Native Java API to work with JavaScript Node Package Manager (NPM): query, retrieve, pack into jar (webjars), CDN
