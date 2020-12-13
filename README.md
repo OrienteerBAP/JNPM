@@ -69,7 +69,7 @@ Read [![javadoc](https://javadoc.io/badge2/org.orienteer.jnpm/jnpm/javadoc.svg)]
 ```
 Usage: jnpm [-hV] [--download-dir=<downloadDirectory>]
             [--home-dir=<homeDirectory>] [--install-dir=<installDirectory>]
-            [COMMAND]
+            [-P=<password>] [--registry=<registryUrl>] [-U=<username>] [COMMAND]
 Java implementation of Node Package Manager
       --download-dir=<downloadDirectory>
                   Cache directory for JNPM to download packages to (default:
@@ -80,6 +80,13 @@ Java implementation of Node Package Manager
       --install-dir=<installDirectory>
                   Global install directory for JNPM (default:
                     <home-dir>/node_modules/)
+  -P, --password=<password>
+                  Password for authentication (optional)
+      --registry=<registryUrl>
+                  NPM registry URL to be used for package lookup and retrieval
+                    (default: http://registry.npmjs.org/)
+  -U, --username=<username>
+                  Username for authentication (optional)
   -V, --version   Print version information and exit.
 Commands:
   download, d  Download packages into local cache
@@ -153,10 +160,7 @@ More details about the plugin:
 
 ```
 jnpm:install
-  Description: Goal to download, extract and attach npm resources
-  Implementation: org.orienteer.maven.jnpm.JNPMMojo
-  Language: java
-  Bound to phase: generate-resources
+  Goal to download, extract and attach npm resources
 
   Available parameters:
 
@@ -182,19 +186,28 @@ jnpm:install
       What should be included as resources (Default: empty - means everything)
 
     outputDirectory (Default: ${project.build.directory}/jnpm/)
-      Required: true
       Location of the output directory
+      Required: Yes
 
     packages
-      Required: true
       NPM packages to be downloaded and extracted (For example: vue@2.6.11)
+      Required: Yes
+
+    password
+      Password for authentication (optional)
 
     pathPrefix
       Prefix for the directory under outputDirectory to which files will be
       placed
-      
+
+    registryUrl (Default: http://registry.npmjs.org/)
+      NPM registry URL to be used for package lookup and retrieval
+
     strategy (Default: WEBJARS)
       Installation strategy to be used
+
+    username
+      Username for authentication (optional)
 ```
 
 ## CDN
@@ -217,6 +230,8 @@ Add the following mapping to your `web.xml`. Adjust as needed:
 
 Files from NPM packages will be available through URLs with the following pattern: `http(s)://<host>:<port>/<deploy-folder>/cdn/<package expression>/<required file>`.
 For example: `http://localhost:8080/cdn/vue@2.6.11/dist/vue.js`
+
+You can user `init-param` to specify extra JNPM parameters, for example, `registryUrl`, `username`, `password` and etc.
 
 ### Apache Wicket
 
