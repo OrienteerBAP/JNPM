@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 
 /**
@@ -21,6 +22,8 @@ public class JNPMSettings {
 	@Builder.Default private Path homeDirectory = Paths.get(System.getProperty("user.home"), ".jnpm");
 	@Builder.Default private boolean validateSignature = true;
 	@Builder.Default private ILogger logger = ILogger.DEFAULT;
+	private String username;
+	@ToString.Exclude private String password;
 	private Path downloadDirectory;
 	private Path installDirectory;
 	

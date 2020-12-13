@@ -107,8 +107,23 @@ public class JNPMMojo
 	@Parameter
     private List<String> excludes;
 	
+	/**
+	 * NPM registry URL to be used for package lookup and retrieval
+	 */
 	@Parameter(defaultValue = JNPMSettings.DEFAULT_REGISTRY_URL)
 	private String registryUrl;
+	
+	/**
+	 * Username for authentication (optional)
+	 */
+	@Parameter
+	private String username;
+	
+	/**
+	 * Password for authentication (optional)
+	 */
+	@Parameter
+	private String password;
 	
 	@Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
@@ -147,6 +162,7 @@ public class JNPMMojo
     protected JNPMSettings.JNPMSettingsBuilder prepareSettingsBuilder() {
     	return JNPMSettings.builder()
     					   .registryUrl(registryUrl)
+    					   .username(username).password(password)
     					   .logger(new ILogger() {
 								@Override
 								public void log(String message, Throwable exc) {

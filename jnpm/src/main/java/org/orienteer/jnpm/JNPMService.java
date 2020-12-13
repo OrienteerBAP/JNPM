@@ -39,6 +39,7 @@ public class JNPMService
 	            .readTimeout(2,TimeUnit.MINUTES)
 	            .writeTimeout(2,  TimeUnit.MINUTES)
 //	            .cache(cache)
+	            .addInterceptor(new AuthorizationInterceptor(settings))
 	            .connectionPool(new ConnectionPool(5, 5, TimeUnit.MINUTES))
 	            .protocols(Arrays.asList(Protocol.HTTP_1_1))
 	            .build();

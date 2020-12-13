@@ -33,6 +33,12 @@ public class JNPM implements Callable<Integer> {
 	@Option(names = "--registry", description = "NPM registry URL to be used for package lookup and retrieval (default: "+JNPMSettings.DEFAULT_REGISTRY_URL+")")
 	private URL registryUrl;
 	
+	@Option(names = {"-U", "--username"}, description = "Username for authentication (optional)")
+	private String username;
+	
+	@Option(names = {"-P", "--password"}, description = "Password for authentication (optional)")
+	private String password;
+	
 	public static void main(String... args) {
 		CommandLine top = new CommandLine(new JNPM());
 		int exitCode = top.execute(args);
@@ -44,6 +50,7 @@ public class JNPM implements Callable<Integer> {
 		builder.homeDirectory(homeDirectory);
 		if(downloadDirectory!=null) builder.downloadDirectory(downloadDirectory);
 		if(registryUrl!=null) builder.registryUrl(registryUrl.toString());
+		builder.username(username).password(password);
 		JNPMService.configure(builder.build());
 	}
 

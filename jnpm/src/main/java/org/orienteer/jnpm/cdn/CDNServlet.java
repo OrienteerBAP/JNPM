@@ -49,6 +49,8 @@ public class CDNServlet extends HttpServlet {
 			String installDirectory = cfg.getInitParameter("installDirectory");
 			if(!Strings.isEmpty(installDirectory)) builder.installDirectory(Paths.get(installDirectory));
 			
+			builder.username(cfg.getInitParameter("username")).password(cfg.getInitParameter("password"));
+			
 			JNPMService.configure(builder.build());
 		}
 	}
