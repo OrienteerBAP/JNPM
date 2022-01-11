@@ -358,4 +358,12 @@ public class JNPMTest
     			throw new AssertionFailedError("Version '"+versionStr+"' should "+(results[i]?"":"NOT ")+"satisfy '"+conditions[i]+"'");
     	}
     }
+    
+    @Test
+    public void sideEffectsTest() throws Exception {
+    	VersionInfo version = JNPMService.instance().getVersionInfo("@angular/common", "11.2.14");
+    	List<String> sideEffects = version.getSideEffects();
+    	assertNotNull("SideEffects for @angular/common v11.2.14 should not be null", sideEffects);
+    	assertEquals(2, sideEffects.size());
+    }
 }

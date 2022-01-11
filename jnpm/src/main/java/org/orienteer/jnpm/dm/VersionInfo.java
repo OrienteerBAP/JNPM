@@ -55,7 +55,7 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	private String jsdelivr;
 	private String module;
 	private String types;
-	private boolean sideEffects = false;
+	private List<String> sideEffects;
 	
 	/*
 	 * public Single<TraversalContext> traverse(TraverseDirection direction, boolean
