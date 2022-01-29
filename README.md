@@ -144,7 +144,7 @@ To include `vue` and into your WAR please add the following into build>plugins s
 <plugin>
 <groupId>org.orienteer.jnpm</groupId>
     <artifactId>jnpm-maven-plugin</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>${LATEST_JNPM_VERSION}</version>
 	<executions>
 		<execution>
 			<goals>
