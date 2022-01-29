@@ -45,5 +45,11 @@ public enum InstallationStrategy implements IInstallationStrategy{
 						   .resolve(tree.getVersion().getName())
 					       .resolve(tree.getVersion().getVersionAsString());
 		}
+	},
+	ONE_DUMP {
+		@Override
+		public Path mapPath(Path rootPath, TraversalTree tree) {
+			return rootPath;
+		}
 	}
 }
