@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 import org.orienteer.jnpm.JNPMService;
 import org.orienteer.jnpm.JNPMSettings;
 
+import okhttp3.logging.HttpLoggingInterceptor.Level;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -39,6 +40,10 @@ public class JNPM implements Callable<Integer> {
 	@Option(names = {"-P", "--password"}, description = "Password for authentication (optional)")
 	private String password;
 	
+	@Option(names = {"-L", "--http-logger-level"}, description = {"HTTP Logger Level for debugging", 
+																	"Valid values: ${COMPLETION-CANDIDATES}"})
+	private Level httpLoggerLevel;
+	
 	public static void main(String... args) {
 		CommandLine top = new CommandLine(new JNPM());
 		int exitCode = top.execute(args);
@@ -51,6 +56,7 @@ public class JNPM implements Callable<Integer> {
 		if(downloadDirectory!=null) builder.downloadDirectory(downloadDirectory);
 		if(registryUrl!=null) builder.registryUrl(registryUrl.toString());
 		builder.username(username).password(password);
+		if(httpLoggerLevel!=null) builder.httpLoggerLevel(httpLoggerLevel);
 		JNPMService.configure(builder.build());
 	}
 

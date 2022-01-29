@@ -20,6 +20,7 @@ import org.orienteer.jnpm.traversal.TraversalTree;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
 import io.reactivex.Observable;
+import okhttp3.logging.HttpLoggingInterceptor.Level;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -125,6 +126,12 @@ public class JNPMMojo
 	@Parameter
 	private String password;
 	
+	/**
+	 * HTTP Logger Level for debugging
+	 */
+	@Parameter(defaultValue = "NONE")
+	private Level httpLoggerLevel;
+	
 	@Parameter(defaultValue = "${project}", readonly = true)
     private MavenProject project;
 	
@@ -162,7 +169,9 @@ public class JNPMMojo
     protected JNPMSettings.JNPMSettingsBuilder prepareSettingsBuilder() {
     	return JNPMSettings.builder()
     					   .registryUrl(registryUrl)
-    					   .username(username).password(password)
+    					   .username(username)
+    					   .password(password)
+    					   .httpLoggerLevel(httpLoggerLevel)
     					   .logger(new ILogger() {
 								@Override
 								public void log(String message, Throwable exc) {

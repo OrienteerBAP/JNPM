@@ -27,6 +27,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.compress.utils.IOUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
@@ -46,6 +47,7 @@ import io.reactivex.Single;
 import io.reactivex.observers.TestObserver;
 import junit.framework.AssertionFailedError;
 import lombok.extern.slf4j.Slf4j;
+import okhttp3.logging.HttpLoggingInterceptor.Level;
 
 /**
  * Unit test for simple App.
@@ -65,6 +67,8 @@ public class JNPMTest
     public void registryInfoRetrival() throws IOException {
     	Single<RegistryInfo> info = JNPMService.instance().getRxService().getRegistryInfo();
     	assertNotNull(info);
+    	RegistryInfo registryInfo = info.blockingGet();
+    	assertNotNull(registryInfo);
     }
     
     @Test
@@ -88,7 +92,7 @@ public class JNPMTest
     }
     
     @Test
-    public void versionInforetrival() throws IOException {
+    public void versionInfoRetrival() throws IOException {
     	VersionInfo versionInfo = JNPMService.instance().getVersionInfo("vue", "2.6.11");
     	assertNotNull(versionInfo);
     	assertNotNull(versionInfo.getVersion());
@@ -365,5 +369,19 @@ public class JNPMTest
     	List<String> sideEffects = version.getSideEffects();
     	assertNotNull("SideEffects for @angular/common v11.2.14 should not be null", sideEffects);
     	assertEquals(2, sideEffects.size());
+    }
+    
+    @Test
+    @Ignore
+    public void testCustomRepository() throws Exception {
+    	String registry = "<registry>";
+    	String pkg = "<package>";
+    	JNPMService.instance(null);
+    	JNPMService.configure(JNPMSettings.builder()
+    							.registryUrl(registry)
+    							.httpLoggerLevel(Level.BODY)
+    							.build());
+    	PackageInfo packageInfo = JNPMService.instance().getPackageInfo(pkg);
+    	System.out.println("PackageInfo: "+packageInfo);
     }
 }

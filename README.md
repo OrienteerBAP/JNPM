@@ -82,6 +82,9 @@ Java implementation of Node Package Manager
       --install-dir=<installDirectory>
                   Global install directory for JNPM (default:
                     <home-dir>/node_modules/)
+  -L, --http-logger-level
+                  HTTP Logger Level for debugging
+                  Valid values: NONE, BASIC, HEADERS, BODY
   -P, --password=<password>
                   Password for authentication (optional)
       --registry=<registryUrl>
@@ -183,6 +186,9 @@ jnpm:install
 
     getProd (Default: false)
       Download direct dependencies
+      
+    httpLoggerLevel (Default: NONE)
+    	HTTP Logger Level for debugging
 
     includes
       What should be included as resources (Default: empty - means everything)

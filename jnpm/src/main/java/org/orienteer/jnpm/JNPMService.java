@@ -1,5 +1,6 @@
 package org.orienteer.jnpm;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -16,8 +17,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.reactivex.schedulers.Schedulers;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.ConnectionPool;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
+import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
+import okhttp3.logging.HttpLoggingInterceptor.Level;
+import okhttp3.logging.HttpLoggingInterceptor.Logger;
+import okhttp3.Interceptor.Chain;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -40,6 +47,8 @@ public class JNPMService
 	            .writeTimeout(2,  TimeUnit.MINUTES)
 //	            .cache(cache)
 	            .addInterceptor(new AuthorizationInterceptor(settings))
+	            .addInterceptor(new HttpLoggingInterceptor(m->settings.getLogger().log(m))
+	            					.setLevel(settings.getHttpLoggerLevel()))
 	            .connectionPool(new ConnectionPool(5, 5, TimeUnit.MINUTES))
 	            .protocols(Arrays.asList(Protocol.HTTP_1_1))
 	            .build();
