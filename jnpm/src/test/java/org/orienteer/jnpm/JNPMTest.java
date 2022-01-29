@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -369,6 +370,16 @@ public class JNPMTest
     	List<String> sideEffects = version.getSideEffects();
     	assertNotNull("SideEffects for @angular/common v11.2.14 should not be null", sideEffects);
     	assertEquals(2, sideEffects.size());
+    }
+    
+    @Test
+    public void traversalOfNotExistingPackages() throws Exception {
+    	Observable<TraversalTree> traversedTree = JNPMService.instance().getRxService()
+    			.traverse(TraverseDirection.WIDER, ITraversalRule.NO_DEPENDENCIES, "notexisting");
+    	assertNotNull(traversedTree);
+    	traversedTree.test()
+    		.assertError(NoSuchElementException.class)
+    		.assertErrorMessage("Package 'notexisting' was not found");
     }
     
     @Test

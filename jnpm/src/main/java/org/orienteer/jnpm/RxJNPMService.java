@@ -2,6 +2,7 @@ package org.orienteer.jnpm;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.orienteer.jnpm.dm.PackageInfo;
 import org.orienteer.jnpm.dm.RegistryInfo;
@@ -100,7 +101,18 @@ public interface RxJNPMService {
     }
     
     public default Observable<TraversalTree> traverse(TraverseDirection direction, ITraversalRule rule, String... specifications) {
-    	List<VersionInfo> roots = Observable.fromArray(specifications).flatMapSingle(s-> bestMatch(s).toSingle()).toList().blockingGet();
+    	List<VersionInfo> roots;
+		try {
+			roots = Observable.fromArray(specifications)
+					.flatMapSingle(s-> bestMatch(s)
+										.toSingle()
+										.onErrorResumeNext(
+												Single.error(new NoSuchElementException("Package '"+s+"' was not found"))))
+					.toList()
+					.blockingGet();
+		} catch (Exception e) {
+			return Observable.error(e);
+		}
     	return traverse(direction, rule, roots.toArray(new VersionInfo[roots.size()]));
     }
    
