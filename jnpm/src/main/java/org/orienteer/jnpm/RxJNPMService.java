@@ -32,17 +32,17 @@ import retrofit2.http.Url;
 @SuppressWarnings("checkstyle:typename")
 public interface RxJNPMService {
 
-	@GET("/")
+	@GET(".")
 	public Single<RegistryInfo> getRegistryInfo();
 	
-	@GET("/{package}")
+	@GET("{package}")
 	public Maybe<PackageInfo> getPackageInfo(@Path("package") String packageName);
 	
 
-	@GET("/{package}/{version}")
+	@GET("{package}/{version}")
 	public Maybe<VersionInfo> getVersionInfo(@Path("package") String packageName, @Path("version") String version);
 
-	@GET("/-/v1/search")
+	@GET("-/v1/search")
 	public Single<SearchResults> search(@Query("text") String text,
 										@Query("size") Integer size,
 										@Query("from") Integer from,
@@ -100,7 +100,7 @@ public interface RxJNPMService {
     }
     
     public default Observable<TraversalTree> traverse(TraverseDirection direction, ITraversalRule rule, String... specifications) {
-    	List<VersionInfo> roots = Observable.fromArray(specifications).flatMapMaybe(s-> bestMatch(s)).toList().blockingGet();
+    	List<VersionInfo> roots = Observable.fromArray(specifications).flatMapSingle(s-> bestMatch(s).toSingle()).toList().blockingGet();
     	return traverse(direction, rule, roots.toArray(new VersionInfo[roots.size()]));
     }
    
