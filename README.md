@@ -76,6 +76,7 @@ Java implementation of Node Package Manager
       --download-dir=<downloadDirectory>
                   Cache directory for JNPM to download packages to (default:
                     <home-dir>/cache/)
+  -f, --force     Force to fetch remote resources even if a local copy exists                                                                                                    on disk
   -h, --help      Show this help message and exit.
       --home-dir=<homeDirectory>
                   Home directory for JNPM (default: C:\Users\naryzhny\.jnpm)
@@ -213,6 +214,9 @@ jnpm:install
 
     strategy (Default: WEBJARS)
       Installation strategy to be used
+
+    useCache (Default: true)
+      Use local cache. Useful if the same package version can be re-uploaded to a registry
 
     username
       Username for authentication (optional)

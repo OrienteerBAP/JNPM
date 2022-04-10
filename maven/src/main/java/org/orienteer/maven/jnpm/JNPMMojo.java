@@ -97,6 +97,12 @@ public class JNPMMojo
 	private boolean attachResources;
 	
 	/**
+	 * Use local cache. Useful if the same package version can be re-uploaded to a registry
+	 */
+	@Parameter(defaultValue = "true")
+	private boolean useCache;
+	
+	/**
 	 * What should be included as resources (Default: empty - means everything)
 	 */
 	@Parameter
@@ -172,6 +178,7 @@ public class JNPMMojo
     					   .username(username)
     					   .password(password)
     					   .httpLoggerLevel(httpLoggerLevel)
+    					   .useCache(useCache)
     					   .logger(new ILogger() {
 								@Override
 								public void log(String message, Throwable exc) {

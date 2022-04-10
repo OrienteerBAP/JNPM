@@ -22,6 +22,7 @@ public class JNPMSettings {
 	@Builder.Default private String registryUrl = DEFAULT_REGISTRY_URL;
 	@Builder.Default private Path homeDirectory = Paths.get(System.getProperty("user.home"), ".jnpm");
 	@Builder.Default private boolean validateSignature = true;
+	@Builder.Default private boolean useCache = true;
 	@Builder.Default private ILogger logger = ILogger.DEFAULT;
 	@Builder.Default private Level httpLoggerLevel = Level.NONE;
 	private String username;

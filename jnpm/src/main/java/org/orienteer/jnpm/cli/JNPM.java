@@ -44,6 +44,9 @@ public class JNPM implements Callable<Integer> {
 																	"Valid values: ${COMPLETION-CANDIDATES}"})
 	private Level httpLoggerLevel;
 	
+	@Option(names = {"-f", "--force"}, description = "Force to fetch remote resources even if a local copy exists on disk")
+    private boolean forceDownload = false;
+	
 	public static void main(String... args) {
 		CommandLine top = new CommandLine(new JNPM());
 		int exitCode = top.execute(args);
@@ -57,6 +60,7 @@ public class JNPM implements Callable<Integer> {
 		if(registryUrl!=null) builder.registryUrl(registryUrl.toString());
 		builder.username(username).password(password);
 		if(httpLoggerLevel!=null) builder.httpLoggerLevel(httpLoggerLevel);
+		builder.useCache(!forceDownload);
 		JNPMService.configure(builder.build());
 	}
 

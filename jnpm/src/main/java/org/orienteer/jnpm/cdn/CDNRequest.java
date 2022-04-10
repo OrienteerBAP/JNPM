@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orienteer.jnpm.JNPMService;
+import org.orienteer.jnpm.JNPMSettings;
 import org.orienteer.jnpm.JNPMUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 
@@ -30,7 +31,10 @@ public class CDNRequest {
 	@NonFinal
 	private Boolean exactVersion;
 	
-	public CDNRequest(String packageName, String version, String path) {
+	@NonFinal
+	private Boolean forceDownload;
+	
+	protected CDNRequest(String packageName, String version, String path) {
 		this.packageName = packageName;
 		this.versionExpression = version!=null && !version.isEmpty()?version:"latest";
 		int indx = path.indexOf("?");
@@ -50,15 +54,26 @@ public class CDNRequest {
 		return packageName+"@"+versionExpression;
 	}
 	
+	public CDNRequest forceDownload() {
+		return forceDownload(true);
+	}
+	
+	public CDNRequest forceDownload(boolean forceDownload) {
+		this.forceDownload = forceDownload;
+		return this;
+	}
+	
 	public VersionInfo resolveVersion(Map<String, VersionInfo> versionsCache) {
 		VersionInfo version =  versionsCache.computeIfAbsent(getPackageVersionExpression(),
 				expression -> {
 					VersionInfo ret = JNPMService.instance().bestMatch(expression);
-					if(ret==null) return NULL_VERSION;
-					ret.downloadTarball().blockingAwait();
-					return ret;
+					return ret==null?NULL_VERSION:ret;
 				});
-		return version!=null && version != NULL_VERSION?version:null;
+		if(version!=null && version != NULL_VERSION) {
+			boolean useCache = forceDownload!=null?!forceDownload:JNPMService.instance().getSettings().isUseCache();
+			version.downloadTarball(useCache).blockingAwait();
+			return version;
+		} else return null;
 	}
 	
 	public static CDNRequest valueOf(String packageInfo, String filePath) {

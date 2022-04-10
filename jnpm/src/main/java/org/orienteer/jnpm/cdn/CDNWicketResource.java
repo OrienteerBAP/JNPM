@@ -15,6 +15,7 @@ import org.apache.wicket.request.resource.AbstractResource;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
 import org.apache.wicket.request.resource.SharedResourceReference;
+import org.apache.wicket.util.string.StringValue;
 import org.apache.wicket.util.time.Time;
 import org.orienteer.jnpm.ILogger;
 import org.orienteer.jnpm.JNPMService;
@@ -65,6 +66,8 @@ public class CDNWicketResource extends AbstractResource {
             PageParameters params = attributes.getParameters();
             String pathInfo = getPathInfo(params);
             CDNRequest cdnRequest = CDNRequest.valueOf(pathInfo);
+            StringValue forceSV = params.get("force");
+            if(!forceSV.isEmpty()) cdnRequest.forceDownload(forceSV.toBoolean(false));
             VersionInfo versionInfo = cdnRequest.resolveVersion(versionsCache);
             if(versionInfo!=null) {
             	response.setContentType(JNPMUtils.fileNameToMimeType(cdnRequest.getFileName()));

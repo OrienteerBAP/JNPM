@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.compress.utils.IOUtils;
 import org.orienteer.jnpm.ILogger;
 import org.orienteer.jnpm.JNPMService;
+import org.orienteer.jnpm.JNPMSettings;
 import org.orienteer.jnpm.traversal.ITraversalRule;
 import org.orienteer.jnpm.traversal.TraverseDirection;
 
@@ -103,17 +104,20 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 				.flatMapCompletable(t -> t.getVersion().downloadTarball());
 	}
 	
-	
 	public Completable downloadTarball() {
+		return downloadTarball(JNPMService.instance().getSettings().isUseCache());
+	}
+	
+	public Completable downloadTarball(final boolean useCache) {
 		return Completable.defer(() ->{
 			File file = getLocalTarball();
-			if(file.exists()) return Completable.complete();
+			if(useCache && file.exists()) return Completable.complete();
 			else {
 				return JNPMService.instance().getRxService()
 					.downloadFile(getDist().getTarball())
 					.map((r)->{
 						InputStream is = r.body().byteStream();
-						ILogger.getLogger().log("Trying create file on path: "+file.getAbsolutePath());
+						ILogger.getLogger().log("Downloading file to: "+file.getAbsolutePath());
 						file.createNewFile();
 						FileOutputStream fos = new FileOutputStream(file);
 						IOUtils.copy(is, fos);
@@ -132,7 +136,7 @@ public class VersionInfo extends AbstractArtifactInfo implements Comparable<Vers
 	public File getLocalTarball() {
 		return JNPMService.instance().getSettings().getDownloadDirectory().resolve(getDist().getTarballName()).toFile();
 	}
-	
+
 	public String getVersionAsString() {
 		return version!=null?version.toString():versionAsString;
 	}

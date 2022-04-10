@@ -61,6 +61,8 @@ public class CDNServlet extends HttpServlet {
 			CDNRequest request = CDNRequest.valueOf(req.getPathInfo());
 			resp.setContentType(JNPMUtils.fileNameToMimeType(request.getFileName()));
 			resp.addHeader("Cache-Control", "public, max-age=604800, immutable");
+			String forceParam = req.getParameter("force");
+			if(forceParam!=null) request.forceDownload(Boolean.parseBoolean(forceParam));
 			JNPMUtils.readTarball(request.resolveVersion(versionsCache), 
 					"/package/"+request.getPath(), 
 					resp.getOutputStream());
