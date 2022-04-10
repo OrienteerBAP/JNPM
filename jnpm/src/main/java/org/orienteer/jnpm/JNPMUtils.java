@@ -15,8 +15,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import javax.activation.MimetypesFileTypeMap;
-
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -210,7 +208,52 @@ public final class JNPMUtils {
 		return map;
 	}
 	
-	private static final MimetypesFileTypeMap MIME_TYPE_MAP = new MimetypesFileTypeMap();
+	private static final Map<String, String> MIME_TYPES_MAPPING = new HashMap<>();
+	
+	{
+		MIME_TYPES_MAPPING.put("json", "application/json");
+		MIME_TYPES_MAPPING.put("js", "text/javascript");
+		MIME_TYPES_MAPPING.put("css", "text/css");
+		MIME_TYPES_MAPPING.put("htm", "text/html");
+		MIME_TYPES_MAPPING.put("html", "text/html");
+		MIME_TYPES_MAPPING.put("xhtml", "text/html");
+		MIME_TYPES_MAPPING.put("txt", "text/plain");
+		MIME_TYPES_MAPPING.put("text", "text/plain");
+		MIME_TYPES_MAPPING.put("gif", "image/gif");
+		MIME_TYPES_MAPPING.put("ief", "image/ief");
+		MIME_TYPES_MAPPING.put("jpeg", "image/jpeg");
+		MIME_TYPES_MAPPING.put("jpg", "image/jpeg");
+		MIME_TYPES_MAPPING.put("jpe", "image/jpeg");
+		MIME_TYPES_MAPPING.put("tiff", "image/tiff");
+		MIME_TYPES_MAPPING.put("tif", "image/tiff");
+		MIME_TYPES_MAPPING.put("png", "image/png");
+		MIME_TYPES_MAPPING.put("xwd", "image/x-xwindowdump");
+		MIME_TYPES_MAPPING.put("ai", "application/postscript");
+		MIME_TYPES_MAPPING.put("eps", "application/postscript");
+		MIME_TYPES_MAPPING.put("ps", "application/postscript");
+		MIME_TYPES_MAPPING.put("rtf", "application/rtf");
+		MIME_TYPES_MAPPING.put("tex", "application/x-tex");
+		MIME_TYPES_MAPPING.put("texinfo", "application/x-texinfo");
+		MIME_TYPES_MAPPING.put("texi", "application/x-texinfo");
+		MIME_TYPES_MAPPING.put("t", "application/x-troff");
+		MIME_TYPES_MAPPING.put("tr", "application/x-troff");
+		MIME_TYPES_MAPPING.put("roff", "application/x-troff");
+		MIME_TYPES_MAPPING.put("au", "audio/basic");
+		MIME_TYPES_MAPPING.put("midi", "audio/midi");
+		MIME_TYPES_MAPPING.put("mid", "audio/midi");
+		MIME_TYPES_MAPPING.put("aifc", "audio/x-aifc");
+		MIME_TYPES_MAPPING.put("aif", "audio/x-aiff");
+		MIME_TYPES_MAPPING.put("aiff", "audio/x-aiff");
+		MIME_TYPES_MAPPING.put("mpeg", "audio/x-mpeg");
+		MIME_TYPES_MAPPING.put("mpg", "audio/x-mpeg");
+		MIME_TYPES_MAPPING.put("wav", "audio/x-wav");
+		MIME_TYPES_MAPPING.put("mpeg", "video/mpeg");
+		MIME_TYPES_MAPPING.put("mpg", "video/mpeg");
+		MIME_TYPES_MAPPING.put("mpe", "video/mpeg");
+		MIME_TYPES_MAPPING.put("qt", "video/quicktime");
+		MIME_TYPES_MAPPING.put("mov", "video/quicktime");
+		MIME_TYPES_MAPPING.put("avi", "video/x-msvideo");
+	}
 	
 	/**
 	 * Suggest mime type according to filename
@@ -219,10 +262,11 @@ public final class JNPMUtils {
 	 */
 	public static String fileNameToMimeType(String fileName) {
 		if(fileName==null) return null;
+		String extension = fileName;
 		int indx = fileName.lastIndexOf('.');
-		if(indx>=0) {
-			String extension = fileName.substring(indx+1).toLowerCase();
-			switch (extension) {
+		if(indx>=0) 
+			extension = fileName.substring(indx+1).toLowerCase();
+		switch (extension) {
 			case "json":
 				return "application/json";
 			case "js":
@@ -233,9 +277,8 @@ public final class JNPMUtils {
 			case "html":
 			case "xhtml":
 				return "text/html";
-			}
 		}
-		return MIME_TYPE_MAP.getContentType(fileName);
+		return MIME_TYPES_MAPPING.getOrDefault(extension, "application/octet-stream");
 	}
 	
 	/**
