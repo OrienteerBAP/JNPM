@@ -48,7 +48,7 @@ public class TraversalTree extends AbstractTraversalNode {
 		return Completable.concatArray(getVersion().downloadTarball(),
 								Completable.fromAction(()-> {
 									File tarball = getVersion().getLocalTarball();
-									JNPMUtils.extractTarball(tarball, strategy.mapPath(targetFolder, TraversalTree.this), strategy.entreeNameMapper());
+									JNPMUtils.extractTarball(tarball, targetFolder, TraversalTree.this, strategy);
 								}));
 	}
 	

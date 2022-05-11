@@ -1,6 +1,7 @@
 package org.orienteer.jnpm;
 
 import java.nio.file.Path;
+import java.util.function.Function;
 
 import org.orienteer.jnpm.traversal.TraversalTree;
 
@@ -50,6 +51,17 @@ public enum InstallationStrategy implements IInstallationStrategy{
 		@Override
 		public Path mapPath(Path rootPath, TraversalTree tree) {
 			return rootPath;
+		}
+	},
+	DIST {
+		@Override
+		public Path mapPath(Path rootPath, TraversalTree tree) {
+			return rootPath;
+		}
+		
+		@Override
+		public Function<String, String> entreeNameMapper() {
+			return JNPMUtils.stringReplacer("package/dist/", "", true);
 		}
 	}
 }

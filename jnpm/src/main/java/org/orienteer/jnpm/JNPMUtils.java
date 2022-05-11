@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
@@ -21,6 +22,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
+import org.orienteer.jnpm.traversal.TraversalTree;
 
 import com.vdurmont.semver4j.Requirement;
 import com.vdurmont.semver4j.Semver;
@@ -38,18 +40,22 @@ public final class JNPMUtils {
 	private static class StringReplacer implements Function<String, String> {
 		private Pattern pattern;
 		private String replacement;
-		public StringReplacer(String regex, String replacement) {
-			this(Pattern.compile(regex), replacement);
+		private boolean shouldMatch;
+		public StringReplacer(String regex, String replacement, boolean shouldMatch) {
+			this(Pattern.compile(regex), replacement, shouldMatch);
 		}
 		
-		public StringReplacer(Pattern pattern, String replacement) {
+		public StringReplacer(Pattern pattern, String replacement, boolean shouldMatch) {
 			this.pattern = pattern;
 			this.replacement = replacement;
+			this.shouldMatch = shouldMatch;
 		}
 
 		@Override
 		public String apply(String t) {
-			return pattern.matcher(t).replaceAll(replacement);
+			Matcher m = pattern.matcher(t);
+			if(shouldMatch && !m.find()) return null;
+			return m.replaceAll(replacement);
 		}
 	}
 	
@@ -68,11 +74,12 @@ public final class JNPMUtils {
 	/**
 	 * Creates a function for replacement according to pattern
 	 * @param regexp pattern to be used for replacement
-	 * @param replacement actual replacament
+	 * @param replacement actual replacement
+	 * @param shouldMatch if true - return null of not matches found
 	 * @return function for performing strings replacements
 	 */
-	public static Function<String, String> stringReplacer(String regexp, String replacement) {
-		return new StringReplacer(regexp, replacement);
+	public static Function<String, String> stringReplacer(String regexp, String replacement, boolean shouldMatch) {
+		return new StringReplacer(regexp, replacement, shouldMatch);
 	}
 	
 	private static NameMatcher newNameMatcher(String regexp) {
@@ -136,6 +143,18 @@ public final class JNPMUtils {
 	 * Extract content of tarball to specified directory
 	 * @param tarball file to extract
 	 * @param destinationDir destination directory
+	 * @param tree traversal tree currently traversed
+	 * @param strategy strategy to map resources
+	 * @throws IOException if tarball can't be extracted for some reason
+	 */
+	public static void extractTarball(File tarball, Path destinationDir, TraversalTree tree, IInstallationStrategy strategy) throws IOException {
+		extractTarball(tarball, strategy.mapPath(destinationDir, tree), strategy.entreeMatcher(), strategy.entreeNameMapper());
+	}
+	
+	/**
+	 * Extract content of tarball to specified directory
+	 * @param tarball file to extract
+	 * @param destinationDir destination directory
 	 * @param pathConverter converter of paths
 	 * @throws IOException if tarball can't be extracted for some reason
 	 */
@@ -177,6 +196,7 @@ public final class JNPMUtils {
 					String entryName = entry.getName();
 //					log.info("Scanning: "+entryName);
 					String newName = pathConverter!=null?pathConverter.apply(entryName):entryName;
+					if(newName==null) continue;
 					Path newPath = destinationDir.resolve(newName);
 					if(!newPath.toAbsolutePath().startsWith(destinationDir.toAbsolutePath()))
 						throw new IOException("File should be under destination directory. Destination dir: "+destinationDir+". File: "+newPath);

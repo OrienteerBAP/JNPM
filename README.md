@@ -133,7 +133,7 @@ json modification
       --[no-]prod         Download dependencies (default)
   -s, --strategy=<strategy>
                           Strategy for extraction: FLAT, NPM, SIMPLE,
-                            SIMPLE_VERSIONED, WEBJARS
+                            SIMPLE_VERSIONED, WEBJARS, ONE_DUMP, DIST
 ```
 ## Maven Plugin
 

@@ -282,7 +282,7 @@ public class JNPMTest
     public void tarballExtractTest() throws IOException {
     	File tarball = new File("src/test/resources/test.tar.gz");
 		Path destinationDir = Paths.get("target/extractTo"+RANDOM.nextInt(999999));
-		JNPMUtils.extractTarball(tarball, destinationDir, ".*", JNPMUtils.stringReplacer("^test/", ""));
+		JNPMUtils.extractTarball(tarball, destinationDir, ".*", JNPMUtils.stringReplacer("^test/", "", true));
 		assertEquals("a", readFile(destinationDir.resolve("a.txt")));
 		assertEquals("b", readFile(destinationDir.resolve("a/b.txt")));
 		assertEquals("c", readFile(destinationDir.resolve("a/b/c.txt")));
