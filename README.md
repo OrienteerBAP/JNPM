@@ -212,6 +212,9 @@ jnpm:install
     registryUrl (Default: http://registry.npmjs.org/)
       NPM registry URL to be used for package lookup and retrieval
 
+    serverId
+      Server id from settings to get username and password from
+
     strategy (Default: WEBJARS)
       Installation strategy to be used
 
