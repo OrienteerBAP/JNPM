@@ -9,6 +9,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
+import org.apache.maven.settings.Server;
+import org.apache.maven.settings.Settings;
 import org.orienteer.jnpm.IInstallationStrategy;
 import org.orienteer.jnpm.ILogger;
 import org.orienteer.jnpm.InstallationStrategy;
@@ -133,6 +135,12 @@ public class JNPMMojo
 	private String password;
 	
 	/**
+	 * Server id from settings to get username and password from
+	 */
+	@Parameter
+	private String serverId;
+	
+	/**
 	 * HTTP Logger Level for debugging
 	 */
 	@Parameter(defaultValue = "NONE")
@@ -143,6 +151,9 @@ public class JNPMMojo
 	
 	@Component
     private MavenProjectHelper projectHelper;
+	
+	@Component
+	private Settings settings;
 
     public void execute()
         throws MojoExecutionException
@@ -173,6 +184,17 @@ public class JNPMMojo
     }
     
     protected JNPMSettings.JNPMSettingsBuilder prepareSettingsBuilder() {
+    	String username = this.username;
+    	String password = this.password;
+    	if(serverId!=null) {
+    		Server server = settings.getServer(serverId);
+    		if(server==null) {
+    			getLog().warn("Server with id="+serverId+" was not found. Ignoring.");
+    		} else {
+    			if(username==null) username = server.getUsername();
+    			if(password==null) password = server.getPassword();
+    		}
+    	}
     	return JNPMSettings.builder()
     					   .registryUrl(registryUrl)
     					   .username(username)
