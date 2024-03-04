@@ -3,7 +3,7 @@ package org.orienteer.jnpm.dm;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.Data;
@@ -12,7 +12,7 @@ import lombok.Data;
  * Data class to store package distribution information
  */
 @Data
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class DistributionInfo extends AbstractInfo {
 	
 	private String integrity;

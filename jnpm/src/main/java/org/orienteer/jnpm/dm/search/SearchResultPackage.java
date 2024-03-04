@@ -8,7 +8,7 @@ import org.orienteer.jnpm.dm.HumanInfo;
 import org.orienteer.jnpm.dm.RepositoryInfo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import lombok.Data;
@@ -17,7 +17,7 @@ import lombok.Data;
  * Data class to store search result
  */
 @Data
-@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SearchResultPackage extends AbstractArtifactInfo {
 	
 	private HumanInfo publisher;
