@@ -20,7 +20,7 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.compress.utils.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.orienteer.jnpm.dm.VersionInfo;
 import org.orienteer.jnpm.traversal.TraversalTree;
 
@@ -124,7 +124,7 @@ public final class JNPMUtils {
 			try (InputStream fi = new FileInputStream(tarball);
 				     InputStream bi = new BufferedInputStream(fi);
 				     InputStream gzi = new GzipCompressorInputStream(bi);
-				     ArchiveInputStream a = new TarArchiveInputStream(gzi)) {
+					 TarArchiveInputStream a = new TarArchiveInputStream(gzi)) {
 				 	if(path.startsWith("/")) path = path.substring(1);
 					ArchiveEntry entry;
 					while((entry = a.getNextEntry()) !=null) {
@@ -188,7 +188,7 @@ public final class JNPMUtils {
 		try (InputStream fi = new FileInputStream(tarball);
 			     InputStream bi = new BufferedInputStream(fi);
 			     InputStream gzi = new GzipCompressorInputStream(bi);
-			     ArchiveInputStream a = new TarArchiveInputStream(gzi)) {
+				 TarArchiveInputStream a = new TarArchiveInputStream(gzi)) {
 			
 				ArchiveEntry entry;
 				while((entry = a.getNextEntry()) !=null) {

@@ -152,7 +152,7 @@ public class JNPMMojo
 	@Component
     private MavenProjectHelper projectHelper;
 	
-	@Component
+	@Parameter(defaultValue = "${settings}", readonly = true)
 	private Settings settings;
 
     public void execute()

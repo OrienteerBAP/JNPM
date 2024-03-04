@@ -333,7 +333,7 @@ public class JNPMTest
     	// and install as NPM do (node_modules/vue and etc)
     	JNPMService.instance().getRxService()
     		.traverse(TraverseDirection.WIDER, ITraversalRule.DEV_DEPENDENCIES, "vue")
-    		.subscribe(t -> {System.out.println(t); t.install(Paths.get("target", "readme"), InstallationStrategy.NPM);});
+    		.subscribe(t -> {System.out.println(t); t.install(Paths.get("target", "readme"), InstallationStrategy.NPM).blockingAwait();});
     }
     
     @Test
