@@ -233,6 +233,8 @@ public final class JNPMUtils {
 	{
 		MIME_TYPES_MAPPING.put("json", "application/json");
 		MIME_TYPES_MAPPING.put("js", "text/javascript");
+		MIME_TYPES_MAPPING.put("cjs", "application/node");
+		MIME_TYPES_MAPPING.put("mjs", "text/javascript;goal=Module");
 		MIME_TYPES_MAPPING.put("css", "text/css");
 		MIME_TYPES_MAPPING.put("htm", "text/html");
 		MIME_TYPES_MAPPING.put("html", "text/html");
@@ -286,18 +288,6 @@ public final class JNPMUtils {
 		int indx = fileName.lastIndexOf('.');
 		if(indx>=0) 
 			extension = fileName.substring(indx+1).toLowerCase();
-		switch (extension) {
-			case "json":
-				return "application/json";
-			case "js":
-				return "text/javascript";
-			case "css":
-				return "text/css";
-			case "htm":
-			case "html":
-			case "xhtml":
-				return "text/html";
-		}
 		return MIME_TYPES_MAPPING.getOrDefault(extension, "application/octet-stream");
 	}
 	
