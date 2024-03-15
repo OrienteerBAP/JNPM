@@ -40,6 +40,15 @@ public class CDNTest {
 		assertEquals("file.js", reqInfo.getFileName());
 		assertTrue(reqInfo.isExactVersion());
 		
+		reqInfo = CDNRequest.valueOf("/@test/vue@2.6.11/path/to/the/file.js");
+		assertEquals("@test", reqInfo.getScope());
+		assertEquals("vue", reqInfo.getPackageName());
+		assertEquals("2.6.11", reqInfo.getVersionExpression());
+		assertEquals("@test/vue@2.6.11", reqInfo.getPackageVersionExpression());
+		assertEquals("path/to/the/file.js", reqInfo.getPath());
+		assertEquals("file.js", reqInfo.getFileName());
+		assertTrue(reqInfo.isExactVersion());
+		
 		reqInfo = CDNRequest.valueOf("/vue@~2.6.11/path/to/the/file2.js");
 		assertEquals("vue", reqInfo.getPackageName());
 		assertEquals("~2.6.11", reqInfo.getVersionExpression());
