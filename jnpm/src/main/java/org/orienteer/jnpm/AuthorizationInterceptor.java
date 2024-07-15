@@ -14,8 +14,11 @@ public class AuthorizationInterceptor implements Interceptor {
 	
 	private String username;
 	private String password;
-	private boolean byPass;
-	
+	private boolean basicAuth;
+
+	// https://github.com/OrienteerBAP/JNPM/commit/8fd783a32024dff44d1d56d654f8341f9ddbd7b3
+	private boolean bearerAuth;
+
 	public AuthorizationInterceptor() {
 		this(JNPMService.instance().getSettings());
 	}
@@ -27,17 +30,24 @@ public class AuthorizationInterceptor implements Interceptor {
 	public AuthorizationInterceptor(String username, String password) {
 		this.username = username;
 		this.password = password;
-		this.byPass = (username == null || username.trim().isEmpty())
-						&& (password == null || password.trim().isEmpty());
+		this.basicAuth = (username != null && !username.trim().isEmpty())
+						&& (password != null && !password.trim().isEmpty());
+		this.bearerAuth = (username != null && !username.trim().isEmpty())
+				&& password == null;
 	}
 
 	@Override
 	public Response intercept(Chain chain) throws IOException {
 		Request request = chain.request();
-		if(!byPass) {
+		if(basicAuth) {
 			request = request.newBuilder()
 								.addHeader("Authorization", Credentials.basic(username, password))
 								.build();
+		}
+		if(bearerAuth) {
+			request = request.newBuilder()
+					.addHeader("Authorization", "Bearer " + username)
+					.build();
 		}
 		return chain.proceed(request);
 	}
