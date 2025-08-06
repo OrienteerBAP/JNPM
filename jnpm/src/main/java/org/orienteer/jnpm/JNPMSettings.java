@@ -17,7 +17,7 @@ import okhttp3.logging.HttpLoggingInterceptor.Level;
 @Value
 public class JNPMSettings {
 	
-	public static final String DEFAULT_REGISTRY_URL = "http://registry.npmjs.org/";
+	public static final String DEFAULT_REGISTRY_URL = "https://registry.npmjs.org/";
 	
 	@Builder.Default private String registryUrl = DEFAULT_REGISTRY_URL;
 	@Builder.Default private Path homeDirectory = Paths.get(System.getProperty("user.home"), ".jnpm");
