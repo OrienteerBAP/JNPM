@@ -18,7 +18,6 @@ import lombok.Data;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class SearchResults extends AbstractInfo {
 	private int total;
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "EEE MMM dd yyyy HH:mm:ss 'GMT'Z (z)")
 	private Date time;
 	private List<SearchResultItem> objects;
 }

@@ -39,11 +39,11 @@
 	<distributionManagement>
 	  <snapshotRepository>
 	    <id>ossrh</id>
-	    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	    <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
 	  </snapshotRepository>
 	  <repository>
 	    <id>ossrh</id>
-	    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	    <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/</url>
 	  </repository>
 	</distributionManagement>
 
@@ -197,11 +197,10 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
-		  <configuration>
-			<forkCount>3</forkCount>
-			<reuseForks>true</reuseForks>
-			<argLine>-Xmx512m -XX:MaxPermSize=256m</argLine>
-		  </configuration>
+          <configuration>
+            <forkCount>3</forkCount>
+            <reuseForks>true</reuseForks>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
