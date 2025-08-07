@@ -15,6 +15,8 @@ Native Java API to work with JavaScript Node Package Manager (NPM): query, retri
 7. [API Reference](#api-reference)
 8. [Troubleshooting](#troubleshooting)
 
+JNPM is a lightweight and fast replacement for [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin), [npm-maven-plugin](https://github.com/jy4618272/npm-maven-plugin) and even [WebJars](https://www.webjars.org/).
+
 ## Quick Start
 
 ### Maven Dependency
@@ -79,31 +81,11 @@ Add to your `pom.xml` to download NPM packages during build:
 
 ## Java API
 
-Include JNPM Jar into pom.xml:
-
-```xml
-<dependency>
-    <groupId>org.orienteer.jnpm</groupId>
-    <artifactId>jnpm</artifactId>
-    <version>${project.version}</version>
-</dependency>
-```
-
-Initialize JNPM API prior to use.
-
-```java
-JNPMService.configure(JNPMSettings.builder()
-  .homeDirectory(Paths.get("/home/myuser/.jnpm")) //Optional
-  .downloadDirectory(Paths.get("/tmp")) //Optional
-  //Other optional configurations: see JavaDoc for more info
- 	.build());
-```
-
-JNPM API has 2 options: **Synchronous API** and **RXJava API**. Please use required one per your needs:
+JNPM provides both **Synchronous API** and **RxJava API** for different use cases:
 
 ```java
 JNPMService jnpmService = JNPMService.instance(); //Synchronous Java API
-RxJNPMService rxJnpmService = JNPMService.instance().getRxService() //RXJava API
+RxJNPMService rxJnpmService = JNPMService.instance().getRxService(); //RxJava API
 ```
 
 ### Complete Examples
@@ -285,7 +267,7 @@ json modification
 
 JNPM maven plugin allows you natively integrate NPM resources into your build process.
 For example, you can download and pack JS packages inside your WAR to use later through WebJars extensions.
-To include `vue` and into your WAR please add the following into build>plugins section of your `pom.xml`
+To include `vue` and other packages into your WAR please add the following into build>plugins section of your `pom.xml`
 
 ```xml
 <plugin>
@@ -299,8 +281,8 @@ To include `vue` and into your WAR please add the following into build>plugins s
 			</goals>
 			<configuration>
 				<packages>
-					<package>vue@2.6.11</package>
-					<package>vuex@~3.4.0</package>
+					<package>vue@3.3.4</package>
+					<package>vuex@4.0.0</package>
 				</packages>
 			</configuration>
 		</execution>
@@ -345,7 +327,7 @@ jnpm:install
       Required: Yes
 
     packages
-      NPM packages to be downloaded and extracted (For example: vue@2.6.11)
+      NPM packages to be downloaded and extracted (For example: vue@3.3.4)
       Required: Yes
 
     password
@@ -494,175 +476,10 @@ Add the following mapping to your `web.xml`. Adjust as needed:
   </servlet-mapping>
 ```
 
+You can use `init-param` to specify extra JNPM parameters, for example, `registryUrl`, `username`, `password` and etc.
+
 Files from NPM packages will be available through URLs with the following pattern: `http(s)://<host>:<port>/<deploy-folder>/cdn/<package expression>/<required file>`.
-For example: `http://localhost:8080/cdn/vue@2.6.11/dist/vue.js`
-
-## API Reference
-
-### Core Classes
-
-| Class | Purpose | Key Methods |
-|-------|---------|-------------|
-| `JNPMService` | Main synchronous API | `getPackageInfo()`, `getVersionInfo()`, `bestMatch()`, `search()` |
-| `RxJNPMService` | Reactive API | `traverse()`, async versions of sync methods |
-| `JNPMSettings` | Configuration | `registryUrl()`, `homeDirectory()`, `username()`, `password()` |
-| `VersionInfo` | Package version data | `downloadTarball()`, `install()`, `getDependencies()` |
-| `PackageInfo` | Package metadata | `getLatest()`, `getVersions()`, `getDescription()` |
-
-### Method Signatures
-
-#### JNPMService Methods
-```java
-// Package information
-PackageInfo getPackageInfo(String packageName)
-VersionInfo getVersionInfo(String packageName, String version)
-VersionInfo bestMatch(String packageName, String versionConstraint)
-VersionInfo bestMatch(String expression) // e.g., "vue@^3.0.0"
-
-// Search
-SearchResults search(String text)
-SearchResults search(String text, Integer size)
-SearchResults search(String text, Integer size, Integer from)
-
-// Registry
-RegistryInfo getRegistryInfo()
-```
-
-#### RxJNPMService Additional Methods
-```java
-// Dependency traversal
-Observable<TraversalTree> traverse(TraverseDirection direction, 
-                                  ITraversalRule rule, 
-                                  String... packageExpressions)
-
-// All sync methods have async Maybe<T>/Single<T> versions
-Maybe<PackageInfo> getPackageInfo(String packageName)
-Maybe<VersionInfo> getVersionInfo(String packageName, String version)
-```
-
-#### Configuration Options
-```java
-JNPMSettings.builder()
-    .registryUrl("https://registry.npmjs.org/")     // NPM registry URL
-    .homeDirectory(Paths.get("~/.jnpm"))           // Cache location
-    .downloadDirectory(Paths.get("/tmp"))          // Download temp dir
-    .username("username")                          // NPM username
-    .password("token")                             // NPM auth token
-    .useCache(true)                               // Enable caching
-    .validateSignature(true)                      // Verify packages
-    .httpLoggerLevel(Level.BASIC)                 // HTTP debug logging
-    .build();
-```
-
-### Traversal Rules
-
-| Rule | Description |
-|------|-------------|
-| `ITraversalRule.DEPENDENCIES` | Production dependencies only |
-| `ITraversalRule.DEV_DEPENDENCIES` | Development dependencies only |
-| `ITraversalRule.OPTIONAL_DEPENDENCIES` | Optional dependencies only |
-| `ITraversalRule.PEER_DEPENDENCIES` | Peer dependencies only |
-| `ITraversalRule.getRuleFor(prod, dev, optional, peer)` | Custom combination |
-
-## Troubleshooting
-
-### Common Issues
-
-#### Authentication Problems
-
-**Issue**: 401 Unauthorized when accessing private registry
-```
-Solution: Use NPM auth token instead of password
-```
-
-```java
-JNPMService.configure(JNPMSettings.builder()
-    .registryUrl("https://npm.company.com/")
-    .username("your-username")
-    .password("npm_TOKEN_HERE")  // Use token from ~/.npmrc
-    .build());
-```
-
-#### Corporate Proxy
-
-**Issue**: Connection timeouts behind corporate firewall
-```
-Solution: Configure proxy through system properties
-```
-
-```java
-// Set before JNPM configuration
-System.setProperty("https.proxyHost", "proxy.company.com");
-System.setProperty("https.proxyPort", "8080");
-System.setProperty("https.proxyUser", "username");
-System.setProperty("https.proxyPassword", "password");
-
-JNPMService.configure(JNPMSettings.builder().build());
-```
-
-#### Cache Issues
-
-**Issue**: Stale or corrupted package data
-```bash
-# Clear JNPM cache
-rm -rf ~/.jnpm/cache/
-
-# Or disable caching temporarily
-```
-
-```java
-JNPMService.configure(JNPMSettings.builder()
-    .useCache(false)  // Disable for clean downloads
-    .build());
-```
-
-#### Version Resolution Problems
-
-**Issue**: `bestMatch()` returns unexpected version
-```java
-// Debug version matching
-List<VersionInfo> availableVersions = JNPMService.instance()
-    .retrieveVersions("vue", "^3.0.0");
-availableVersions.forEach(v -> System.out.println(v.getVersionAsString()));
-
-// Use specific version if needed
-VersionInfo specific = JNPMService.instance().getVersionInfo("vue", "3.3.4");
-```
-
-#### Memory Issues with Large Dependencies
-
-**Issue**: OutOfMemoryError during dependency traversal
-```java
-// Process dependencies in batches
-RxJNPMService rxService = JNPMService.instance().getRxService();
-rxService.traverse(TraverseDirection.WIDER, ITraversalRule.DEPENDENCIES, "package")
-    .buffer(10)  // Process 10 packages at a time
-    .subscribe(batch -> {
-        batch.forEach(tree -> {
-            // Process each package
-            tree.install(targetPath, strategy).blockingAwait();
-        });
-    });
-```
-
-### Debug Logging
-
-Enable HTTP request logging to troubleshoot network issues:
-
-```java
-JNPMService.configure(JNPMSettings.builder()
-    .httpLoggerLevel(Level.BASIC)    // NONE, BASIC, HEADERS, BODY
-    .build());
-```
-
-### Performance Tips
-
-1. **Use caching** - Keep `useCache(true)` for development
-2. **Batch operations** - Use RxJava operators for large dependency sets  
-3. **Specific versions** - Avoid version ranges when possible for faster resolution
-4. **Shared cache** - Configure `homeDirectory` to shared location for team development
-
-You can user `init-param` to specify extra JNPM parameters, for example, `registryUrl`, `username`, `password` and etc.
+For example: `http://localhost:8080/cdn/vue@3.3.4/dist/vue.js`
 
 ### Apache Wicket
 
@@ -675,7 +492,7 @@ if(!JNPMService.isConfigured())
 ```
 
 Files from NPM packages will be available through URLs with the following pattern: `http(s)://<host>:<port>/<deploy-folder>/cdn/<package expression>/<required file>`.
-For example: `http://localhost:8080/cdn/vue@2.6.11/dist/vue.js`
+For example: `http://localhost:8080/cdn/vue@3.3.4/dist/vue.js`
 
 ## API Reference
 
@@ -841,3 +658,4 @@ JNPMService.configure(JNPMSettings.builder()
 2. **Batch operations** - Use RxJava operators for large dependency sets  
 3. **Specific versions** - Avoid version ranges when possible for faster resolution
 4. **Shared cache** - Configure `homeDirectory` to shared location for team development
+
