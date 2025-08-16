@@ -18,6 +18,8 @@ import org.apache.wicket.request.resource.SharedResourceReference;
 import org.apache.wicket.request.handler.resource.ResourceStreamRequestHandler;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.http.handler.RedirectRequestHandler;
+import org.apache.wicket.request.Url;
+import org.apache.wicket.request.UrlRenderer;
 import org.apache.wicket.util.string.StringValue;
 import org.apache.wicket.util.time.Time;
 import org.orienteer.jnpm.ILogger;
@@ -79,14 +81,12 @@ public class CDNWicketResource extends AbstractResource {
             }
             
             if(cdnRequest.shouldRedirect()) {
-            	String redirectUrl = cdnRequest.buildRedirectUrl(versionInfo);
-            	if(redirectUrl != null) {
-            		StringBuilder fullRedirectUrl = new StringBuilder(redirectUrl);
-            		String queryString = buildQueryString(params);
-            		if(queryString != null && !queryString.isEmpty()) {
-            			fullRedirectUrl.append('?').append(queryString);
-            		}
-            		RequestCycle.get().scheduleRequestHandlerAfterCurrent(new RedirectRequestHandler(fullRedirectUrl.toString()));
+            	String baseRedirectUrl = cdnRequest.buildRedirectUrl(versionInfo);
+            	if(baseRedirectUrl != null) {
+            		Url fullRedirectUrl = buildRedirectUrl(baseRedirectUrl, params);
+            		UrlRenderer urlRenderer = RequestCycle.get().getUrlRenderer();
+            		String renderedRedirectUrl = urlRenderer.renderUrl(fullRedirectUrl);
+            		RequestCycle.get().scheduleRequestHandlerAfterCurrent(new RedirectRequestHandler(renderedRedirectUrl));
             		response.setError(HttpServletResponse.SC_FOUND);
             		return response;
             	}
@@ -135,15 +135,15 @@ public class CDNWicketResource extends AbstractResource {
         return sb.toString();
 	}
 	
-	protected String buildQueryString(PageParameters params) {
-		StringBuilder queryString = new StringBuilder();
+	protected Url buildRedirectUrl(String baseRedirectUrl, PageParameters params) {
+		Url redirectUrl = Url.parse(baseRedirectUrl);
 		for(String namedKey : params.getNamedKeys()) {
-			if(queryString.length() > 0) {
-				queryString.append('&');
+			java.util.List<StringValue> values = params.getValues(namedKey);
+			for(StringValue value : values) {
+				redirectUrl.addQueryParameter(namedKey, value.toString());
 			}
-			queryString.append(namedKey).append('=').append(params.get(namedKey).toString());
 		}
-		return queryString.toString();
+		return redirectUrl;
 	}
 
 	public static void mount(WebApplication app) {
