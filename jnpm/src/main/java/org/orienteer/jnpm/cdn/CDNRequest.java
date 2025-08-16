@@ -20,7 +20,7 @@ public class CDNRequest {
 	
 	private static final VersionInfo NULL_VERSION = new VersionInfo();
 	
-	private static final String PATH_PATTERN = "/((@[^/]*)/)?([^/@]*)@?([^/]*)/(.*)";
+	private static final String PATH_PATTERN = "/((@[^/]*)/)?([^/@]*)@?([^/]*)(?:/(.*))?";
 	private static final Pattern PATH_REGEXP = Pattern.compile(PATH_PATTERN);
 
 	private String scope;
@@ -39,10 +39,15 @@ public class CDNRequest {
 		this.scope = scope;
 		this.packageName = packageName;
 		this.versionExpression = version!=null && !version.isEmpty()?version:"latest";
-		int indx = path.indexOf("?");
-		this.path = indx<0?path:path.substring(0, indx);
-		indx = path.lastIndexOf("/");
-		fileName = indx<0?path:path.substring(indx+1);
+		if(path != null && !path.isEmpty()) {
+			int indx = path.indexOf("?");
+			this.path = indx<0?path:path.substring(0, indx);
+			indx = path.lastIndexOf("/");
+			fileName = indx<0?path:path.substring(indx+1);
+		} else {
+			this.path = null;
+			this.fileName = null;
+		}
 	}
 	
 	public boolean isExactVersion() {
@@ -99,7 +104,7 @@ public class CDNRequest {
 	public static CDNRequest valueOf(String scope, String packageInfo, String filePath) {
 		int indx = packageInfo.indexOf('@');
 		String pck = indx<0?packageInfo:packageInfo.substring(0, indx);
-		String version = indx<0?packageInfo.substring(indx+1):null;
+		String version = indx>=0?packageInfo.substring(indx+1):null;
 		return new CDNRequest(scope, pck, version, filePath);
 	}
 	
@@ -110,6 +115,48 @@ public class CDNRequest {
 		} else {
 			throw new IllegalArgumentException("Path '"+fullPath+"' should corresponds pattern '"+PATH_PATTERN+"'");
 		}
+	}
+	
+	public boolean shouldRedirectForVersion() {
+		return !isExactVersion();
+	}
+	
+	public boolean shouldRedirectForPath() {
+		return path == null || path.isEmpty();
+	}
+	
+	public boolean shouldRedirect() {
+		return shouldRedirectForVersion() || shouldRedirectForPath();
+	}
+	
+	public String buildRedirectUrl(VersionInfo resolvedVersion) {
+		StringBuilder sb = new StringBuilder();
+		
+		if(scope != null) {
+			sb.append('/').append(scope);
+		}
+		sb.append('/').append(packageName).append('@').append(resolvedVersion.getVersion());
+		
+		String redirectPath = path;
+		if(redirectPath == null || redirectPath.isEmpty()) {
+			redirectPath = getDefaultPath(resolvedVersion);
+		}
+		
+		if(redirectPath != null && !redirectPath.isEmpty()) {
+			sb.append('/').append(redirectPath);
+		}
+		
+		return sb.toString();
+	}
+	
+	public String getDefaultPath(VersionInfo versionInfo) {
+		if(versionInfo.getUnpkg() != null && !versionInfo.getUnpkg().isEmpty()) {
+			return versionInfo.getUnpkg();
+		}
+		if(versionInfo.getJsdelivr() != null && !versionInfo.getJsdelivr().isEmpty()) {
+			return versionInfo.getJsdelivr();
+		}
+		return null;
 	}
 	
 	@Override

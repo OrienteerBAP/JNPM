@@ -15,6 +15,9 @@ import org.apache.wicket.request.resource.AbstractResource;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
 import org.apache.wicket.request.resource.SharedResourceReference;
+import org.apache.wicket.request.handler.resource.ResourceStreamRequestHandler;
+import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.http.handler.RedirectRequestHandler;
 import org.apache.wicket.util.string.StringValue;
 import org.apache.wicket.util.time.Time;
 import org.orienteer.jnpm.ILogger;
@@ -68,7 +71,32 @@ public class CDNWicketResource extends AbstractResource {
             CDNRequest cdnRequest = CDNRequest.valueOf(pathInfo);
             StringValue forceSV = params.get("force");
             if(!forceSV.isEmpty()) cdnRequest.forceDownload(forceSV.toBoolean(false));
+            
             VersionInfo versionInfo = cdnRequest.resolveVersion(versionsCache);
+            if(versionInfo == null) {
+            	response.setError(HttpServletResponse.SC_NOT_FOUND, "Package was not found for " + cdnRequest.getPackageVersionExpression());
+            	return response;
+            }
+            
+            if(cdnRequest.shouldRedirect()) {
+            	String redirectUrl = cdnRequest.buildRedirectUrl(versionInfo);
+            	if(redirectUrl != null) {
+            		StringBuilder fullRedirectUrl = new StringBuilder(redirectUrl);
+            		String queryString = buildQueryString(params);
+            		if(queryString != null && !queryString.isEmpty()) {
+            			fullRedirectUrl.append('?').append(queryString);
+            		}
+            		RequestCycle.get().scheduleRequestHandlerAfterCurrent(new RedirectRequestHandler(fullRedirectUrl.toString()));
+            		response.setError(HttpServletResponse.SC_FOUND);
+            		return response;
+            	}
+            }
+            
+            if(cdnRequest.getPath() == null || cdnRequest.getPath().isEmpty()) {
+            	response.setError(HttpServletResponse.SC_NOT_FOUND, "No path specified and no default path available for " + cdnRequest.getPackageVersionExpression());
+            	return response;
+            }
+            
             if(versionInfo!=null) {
             	response.setContentType(JNPMUtils.fileNameToMimeType(cdnRequest.getFileName()));
             	response.setCacheDurationToMaximum();
@@ -105,6 +133,17 @@ public class CDNWicketResource extends AbstractResource {
         	sb.append('/').append(params.get(i));
         }
         return sb.toString();
+	}
+	
+	protected String buildQueryString(PageParameters params) {
+		StringBuilder queryString = new StringBuilder();
+		for(String namedKey : params.getNamedKeys()) {
+			if(queryString.length() > 0) {
+				queryString.append('&');
+			}
+			queryString.append(namedKey).append('=').append(params.get(namedKey).toString());
+		}
+		return queryString.toString();
 	}
 
 	public static void mount(WebApplication app) {

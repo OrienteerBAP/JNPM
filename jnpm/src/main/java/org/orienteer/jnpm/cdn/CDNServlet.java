@@ -59,11 +59,35 @@ public class CDNServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		try {
 			CDNRequest request = CDNRequest.valueOf(req.getPathInfo());
-			resp.setContentType(JNPMUtils.fileNameToMimeType(request.getFileName()));
-			resp.addHeader("Cache-Control", "public, max-age=604800, immutable");
 			String forceParam = req.getParameter("force");
 			if(forceParam!=null) request.forceDownload(Boolean.parseBoolean(forceParam));
-			JNPMUtils.readTarball(request.resolveVersion(versionsCache), 
+			
+			VersionInfo resolvedVersion = request.resolveVersion(versionsCache);
+			if(resolvedVersion == null) {
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Package was not found for " + request.getPackageVersionExpression());
+				return;
+			}
+			
+			if(request.shouldRedirect()) {
+				String redirectUrl = request.buildRedirectUrl(resolvedVersion);
+				if(redirectUrl != null) {
+					String queryString = req.getQueryString();
+					if(queryString != null && !queryString.isEmpty()) {
+						redirectUrl += "?" + queryString;
+					}
+					resp.sendRedirect(redirectUrl);
+					return;
+				}
+			}
+			
+			if(request.getPath() == null || request.getPath().isEmpty()) {
+				resp.sendError(HttpServletResponse.SC_NOT_FOUND, "No path specified and no default path available for " + request.getPackageVersionExpression());
+				return;
+			}
+			
+			resp.setContentType(JNPMUtils.fileNameToMimeType(request.getFileName()));
+			resp.addHeader("Cache-Control", "public, max-age=604800, immutable");
+			JNPMUtils.readTarball(resolvedVersion, 
 					"/package/"+request.getPath(), 
 					resp.getOutputStream());
 		} catch (IllegalArgumentException | FileNotFoundException e) {
